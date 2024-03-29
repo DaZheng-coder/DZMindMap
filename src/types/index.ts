@@ -4,6 +4,7 @@ export interface INode {
   id: string;
   label: ReactNode;
   children?: INode[];
+  parentNode?: INode;
 }
 
 export interface ICoord {

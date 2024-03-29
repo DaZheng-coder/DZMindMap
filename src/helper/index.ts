@@ -26,3 +26,14 @@ export const findNode = (data: INode, id: string): INode | undefined => {
     if (node) return node;
   }
 };
+
+export const transformData = (data: INode, parentNode?: INode): INode => {
+  if (!data || !data.children) return data;
+  if (parentNode) {
+    data.parentNode = parentNode;
+  }
+  for (const child of data.children) {
+    transformData(child, data);
+  }
+  return data;
+};

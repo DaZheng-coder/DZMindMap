@@ -4,17 +4,17 @@ import { INode } from "../../types";
 
 interface IDomMindTreeProps {
   data: INode;
-  selectId: string;
-  setSelectId: (id: string) => void;
+  selectedNode: INode | undefined;
+  setSelectedNode: (node: INode) => void;
 }
 
 const MindMapBlock: FC<IDomMindTreeProps> = ({
   data,
-  selectId,
-  setSelectId,
+  selectedNode,
+  setSelectedNode,
 }) => {
   const handleClickNode = () => {
-    setSelectId(data.id);
+    setSelectedNode(data);
   };
 
   return (
@@ -25,7 +25,7 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
       >
         <MindMapNode
           key={data.id}
-          selectId={selectId}
+          selectId={selectedNode?.id || ""}
           id={data.id}
           label={data.label}
         />
@@ -36,8 +36,8 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
             <MindMapBlock
               key={child.id}
               data={child}
-              selectId={selectId}
-              setSelectId={setSelectId}
+              selectedNode={selectedNode}
+              setSelectedNode={setSelectedNode}
             />
           ))}
         </div>
