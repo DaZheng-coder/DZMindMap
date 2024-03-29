@@ -17,11 +17,14 @@ const useMindMapData = (sourceData: INode) => {
       if (!node.children) {
         node.children = [];
       }
-      node.children.push({
+      const newNode = {
         id: nanoid(),
         label: nanoid(),
         children: [],
-      });
+        parentNode: selectNode,
+      };
+      node.children.push(newNode);
+      setSelectedNode(newNode);
       return newData;
     });
   }, []);
