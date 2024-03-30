@@ -48,13 +48,15 @@ const DomMindMap: FC = () => {
   }, [containerRef, data]);
 
   return (
-    <div ref={containerRef} className="tw-relative tw-inline-block">
-      <SvgContainer lineCoords={lineCoords} />
+    <div className="tw-w-full tw-h-full tw-overflow-scroll tw-flex">
+      <div ref={containerRef} className="tw-relative tw-inline-block tw-m-auto">
+        <SvgContainer lineCoords={lineCoords} />
         <MindMapBlock
           data={data}
           selectedNode={selectedNode}
           setSelectedNode={setSelectedNode}
         />
+      </div>
     </div>
   );
 };
