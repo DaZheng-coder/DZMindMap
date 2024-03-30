@@ -1,6 +1,7 @@
 import { FC } from "react";
 import MindMapNode from "../MindMapNode";
 import { INode } from "../../types";
+import { useDrag } from "react-dnd";
 
 interface IDomMindTreeProps {
   data: INode;
@@ -17,8 +18,13 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
     setSelectedNode(data);
   };
 
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "MindMap",
+    item: data,
+  }));
+
   return (
-    <div className="tw-flex tw-z-1">
+    <div ref={drag} className="tw-flex tw-z-1">
       <div
         className={`tw-flex hover:tw-cursor-pointer tw-items-center `}
         onClick={handleClickNode}

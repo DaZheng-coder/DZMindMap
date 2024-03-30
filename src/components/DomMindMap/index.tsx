@@ -6,6 +6,8 @@ import { initLineCoords } from "../../helper";
 import useMindMapData from "../../hooks/useMindMapData";
 import { nanoid } from "nanoid";
 import useDragCanvas from "../../hooks/useScroll";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const mockData: INode = {
   id: nanoid(),
@@ -66,17 +68,19 @@ const DomMindMap: FC = () => {
         isDragging ? "tw-select-none" : ""
       } tw-w-full tw-h-full tw-overflow-scroll tw-flex`}
     >
-      <div
-        ref={mindMapWrapRef}
-        className="tw-relative tw-inline-block tw-m-auto"
-      >
-        <SvgContainer lineCoords={lineCoords} />
-        <MindMapBlock
-          data={data}
-          selectedNode={selectedNode}
-          setSelectedNode={setSelectedNode}
-        />
-      </div>
+      <DndProvider backend={HTML5Backend}>
+        <div
+          ref={mindMapWrapRef}
+          className="tw-relative tw-inline-block tw-m-auto"
+        >
+          <SvgContainer lineCoords={lineCoords} />
+          <MindMapBlock
+            data={data}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
+          />
+        </div>
+      </DndProvider>
     </div>
   );
 };
