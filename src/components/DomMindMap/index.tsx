@@ -16,6 +16,9 @@ const mockData: INode = {
 
 const DomMindMap: FC = () => {
   const [lineCoords, setLineCoords] = useState<ILineCoord[]>([]);
+
+  const mindMapWrapRef = useRef<HTMLDivElement>(null);
+
   const {
     data,
     appendChildNode,
@@ -25,7 +28,6 @@ const DomMindMap: FC = () => {
     setSelectedNode,
   } = useMindMapData(mockData);
 
-  const mindMapWrapRef = useRef<HTMLDivElement>(null);
   const {
     isDragging,
     scrollerRef,

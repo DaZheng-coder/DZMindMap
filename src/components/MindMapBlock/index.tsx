@@ -14,14 +14,14 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
   selectedNode,
   setSelectedNode,
 }) => {
-  const handleClickNode = () => {
-    setSelectedNode(data);
-  };
-
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "MindMap",
     item: data,
   }));
+
+  const handleClickNode = () => {
+    setSelectedNode(data);
+  };
 
   return (
     <div ref={drag} className="tw-flex tw-z-1">
