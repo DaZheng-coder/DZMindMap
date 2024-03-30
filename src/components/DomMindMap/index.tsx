@@ -5,6 +5,7 @@ import SvgContainer from "../SvgContainer";
 import { initLineCoords } from "../../helper";
 import useMindMapData from "../../hooks/useMindMapData";
 import { nanoid } from "nanoid";
+import useDragCanvas from "../../hooks/useScroll";
 
 const mockData: INode = {
   id: nanoid(),
@@ -16,7 +17,14 @@ const DomMindMap: FC = () => {
   const { data, appendChildNode, selectedNode, setSelectedNode } =
     useMindMapData(mockData);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const mindMapWrapRef = useRef<HTMLDivElement>(null);
+  const {
+    isDragging,
+    scrollerRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+  } = useDragCanvas();
 
   useLayoutEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,18 +46,30 @@ const DomMindMap: FC = () => {
   }, [appendChildNode, selectedNode]);
 
   useLayoutEffect(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
+    if (mindMapWrapRef.current) {
+      const rect = mindMapWrapRef.current.getBoundingClientRect();
       const originCoords = { x: rect.left, y: rect.top };
       const lineCoords: ILineCoord[] = [];
       initLineCoords(data, originCoords, lineCoords);
       setLineCoords(lineCoords);
     }
-  }, [containerRef, data]);
+  }, [mindMapWrapRef, data]);
 
   return (
-    <div className="tw-w-full tw-h-full tw-overflow-scroll tw-flex">
-      <div ref={containerRef} className="tw-relative tw-inline-block tw-m-auto">
+    <div
+      ref={scrollerRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      className={`${
+        isDragging ? "tw-select-none" : ""
+      } tw-w-full tw-h-full tw-overflow-scroll tw-flex`}
+    >
+      <div
+        ref={mindMapWrapRef}
+        className="tw-relative tw-inline-block tw-m-auto"
+      >
         <SvgContainer lineCoords={lineCoords} />
         <MindMapBlock
           data={data}
