@@ -27,13 +27,11 @@ export const findNode = (data: INode, id: string): INode | undefined => {
   }
 };
 
-export const transformData = (data: INode, parentNode?: INode): INode => {
-  if (!data || !data.children) return data;
-  if (parentNode) {
-    data.parentNode = parentNode;
-  }
+export const findNodeParent = (data: INode, id: string): INode | undefined => {
+  if (data.id === id || !data.children) return;
+  if (data.children.some((child) => child.id === id)) return data;
   for (const child of data.children) {
-    transformData(child, data);
+    const node = findNodeParent(child, id);
+    if (node) return node;
   }
-  return data;
 };

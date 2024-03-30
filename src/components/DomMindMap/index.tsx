@@ -16,8 +16,14 @@ const mockData: INode = {
 
 const DomMindMap: FC = () => {
   const [lineCoords, setLineCoords] = useState<ILineCoord[]>([]);
-  const { data, appendChildNode, selectedNode, setSelectedNode } =
-    useMindMapData(mockData);
+  const {
+    data,
+    appendChildNode,
+    appendSameLevelNode,
+    removeNodeBlock,
+    selectedNode,
+    setSelectedNode,
+  } = useMindMapData(mockData);
 
   const mindMapWrapRef = useRef<HTMLDivElement>(null);
   const {
@@ -37,7 +43,11 @@ const DomMindMap: FC = () => {
           appendChildNode(selectedNode);
           break;
         case "Enter":
-          appendChildNode(selectedNode?.parentNode);
+          appendSameLevelNode(selectedNode);
+          break;
+        case "Backspace":
+        case "Delete":
+          removeNodeBlock(selectedNode);
           break;
       }
     };

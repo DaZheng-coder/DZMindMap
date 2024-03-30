@@ -1,18 +1,18 @@
 import { useCallback, useState } from "react";
 import { INode } from "../types";
-import { findNode, transformData } from "../helper";
+import { findNode, findNodeParent } from "../helper";
 import { nanoid } from "nanoid";
 import { cloneDeep } from "lodash";
 
 const useMindMapData = (sourceData: INode) => {
-  const [data, setData] = useState<INode>(transformData(sourceData));
+  const [data, setData] = useState<INode>(sourceData);
   const [selectedNode, setSelectedNode] = useState<INode>();
 
-  const appendChildNode = useCallback((selectNode: INode | undefined) => {
-    if (!selectNode) return;
+  const appendChildNode = useCallback((selectedNode: INode | undefined) => {
+    if (!selectedNode) return;
     setData((data) => {
       const newData = cloneDeep(data);
-      const node = findNode(newData, selectNode.id);
+      const node = findNode(newData, selectedNode.id);
       if (!node) return data;
       if (!node.children) {
         node.children = [];
@@ -21,7 +21,6 @@ const useMindMapData = (sourceData: INode) => {
         id: nanoid(),
         label: nanoid(),
         children: [],
-        parentNode: selectNode,
       };
       node.children.push(newNode);
       setSelectedNode(newNode);
@@ -29,7 +28,37 @@ const useMindMapData = (sourceData: INode) => {
     });
   }, []);
 
-  return { data, appendChildNode, selectedNode, setSelectedNode };
+  const appendSameLevelNode = useCallback(
+    (selectedNode: INode | undefined) => {
+      if (!selectedNode) return;
+      const parent = findNodeParent(data, selectedNode.id);
+      if (!parent) return;
+      appendChildNode(parent);
+    },
+    [data]
+  );
+
+  const removeNodeBlock = useCallback((selectedNode: INode | undefined) => {
+    if (!selectedNode) return;
+    setData((data) => {
+      const newData = cloneDeep(data);
+      const parent = findNodeParent(newData, selectedNode.id);
+      if (!parent) return data;
+      parent.children = parent.children?.filter(
+        (child) => child.id !== selectedNode.id
+      );
+      return newData;
+    });
+  }, []);
+
+  return {
+    data,
+    appendChildNode,
+    appendSameLevelNode,
+    selectedNode,
+    setSelectedNode,
+    removeNodeBlock,
+  };
 };
 
 export default useMindMapData;
