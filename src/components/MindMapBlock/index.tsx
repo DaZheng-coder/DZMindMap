@@ -1,7 +1,8 @@
-import { FC } from "react";
+import { FC, useCallback, useEffect, useRef } from "react";
 import MindMapNode from "../MindMapNode";
 import { INode } from "../../types";
-import { useDrag } from "react-dnd";
+import { useDrag, useDrop } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 
 interface IDomMindTreeProps {
   data: INode;
@@ -14,18 +15,46 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
   selectedNode,
   setSelectedNode,
 }) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const blockRef = useRef<HTMLDivElement | null>(null);
+
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
-    item: data,
+    item: { data, draggingDomRef: blockRef },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
   }));
 
-  const handleClickNode = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedNode(data);
-  };
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: "MindMap",
+    hover: (item, monitor) => {
+      const hover = monitor.isOver({ shallow: true });
+      if (hover) {
+        // console.log("*** item", item, data.label);
+      }
+    },
+  }));
+
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true });
+  }, []);
+
+  const handleClickNode = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedNode(data);
+    },
+    [data, setSelectedNode]
+  );
+
+  drop(drag(blockRef));
 
   return (
-    <div ref={drag} className="tw-flex tw-z-1">
+    <div
+      ref={blockRef}
+      className="tw-flex tw-z-1"
+      onMouseDown={(e) => e.stopPropagation()}
+    >
       <div
         className={`tw-flex hover:tw-cursor-pointer tw-items-center `}
         onClick={handleClickNode}

@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import useDragCanvas from "../../hooks/useScroll";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { CustomDragLayer } from "../CustomDragLayer";
 
 const mockData: INode = {
   id: nanoid(),
@@ -29,7 +30,7 @@ const DomMindMap: FC = () => {
   } = useMindMapData(mockData);
 
   const {
-    isDragging,
+    isDraggingCanvas,
     scrollContainerRef,
     handleMouseDown,
     handleMouseMove,
@@ -83,7 +84,7 @@ const DomMindMap: FC = () => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       className={`${
-        isDragging ? "tw-select-none" : ""
+        isDraggingCanvas ? "tw-select-none" : ""
       } tw-w-full tw-h-full tw-overflow-scroll tw-flex`}
     >
       <DndProvider backend={HTML5Backend}>
@@ -91,6 +92,7 @@ const DomMindMap: FC = () => {
           ref={mindMapWrapRef}
           className="tw-relative tw-inline-block tw-m-auto"
         >
+          <CustomDragLayer />
           <SvgContainer lineCoords={lineCoords} />
           <MindMapBlock
             data={data}
