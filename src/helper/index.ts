@@ -10,12 +10,13 @@ export const initLineCoords = (
   if (!startRect) return;
   const y = startRect.bottom - originCoord.y - startRect.height / 2;
   const startCoord = { x: startRect.right - originCoord.x, y };
+  const endCoord = { x: startRect.left - originCoord.x, y };
   children?.forEach((child) => {
     const endCoord = initLineCoords(child, originCoord, ILineCoords);
     if (endCoord) ILineCoords.push({ start: startCoord, end: endCoord });
   });
 
-  return startCoord;
+  return endCoord;
 };
 
 export const findNode = (data: INode, id: string): INode | undefined => {

@@ -9,6 +9,7 @@ interface IDomMindTreeProps {
   selectedNode: INode | undefined;
   setSelectedNode: (node: INode) => void;
   cls?: string;
+  isRoot?: boolean;
 }
 
 const MindMapBlock: FC<IDomMindTreeProps> = ({
@@ -16,15 +17,20 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
   selectedNode,
   setSelectedNode,
   cls = "",
+  isRoot = false,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
+  const nodeRef = useRef<HTMLDivElement | null>(null);
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
-    item: { data, draggingDomRef: blockRef },
+    item: { data, draggingDomRef: nodeRef },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    canDrag: (monitor) => {
+      return !isRoot;
+    },
   }));
 
   const [collectedProps, drop] = useDrop(() => ({
@@ -49,19 +55,22 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
     [data, setSelectedNode]
   );
 
-  drop(drag(blockRef));
+  drag(nodeRef);
+  drop(blockRef);
 
   return (
     <div
       ref={blockRef}
-      className={`tw-flex tw-z-1 ${cls}`}
-      onMouseDown={(e) => e.stopPropagation()}
+      className={`tw-flex tw-z-1 ${cls} ${
+        isDragging ? "tw-opacity-60" : "tw-opacity-100"
+      }`}
     >
       <div
         className={`tw-flex hover:tw-cursor-pointer tw-items-center `}
         onClick={handleClickNode}
       >
         <MindMapNode
+          ref={nodeRef}
           key={data.id}
           selectId={selectedNode?.id || ""}
           id={data.id}

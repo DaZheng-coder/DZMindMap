@@ -92,14 +92,15 @@ const DomMindMap: FC = () => {
           ref={mindMapWrapRef}
           className="tw-relative tw-inline-block tw-m-auto tw-h-full"
         >
-          <CustomDragLayer />
           <SvgContainer lineCoords={lineCoords} />
           <MindMapBlock
             cls="tw-flex tw-h-full tw-justify-center tw-items-center"
             data={data}
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNode}
+            isRoot
           />
+          <CustomDragLayer />
         </div>
       </DndProvider>
     </div>
