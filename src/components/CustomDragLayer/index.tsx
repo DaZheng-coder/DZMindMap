@@ -26,10 +26,17 @@ export const CustomDragLayer = () => {
 
   useEffect(() => {
     if (item?.draggingDomRef.current) {
-      const width = item.draggingDomRef.current.getBoundingClientRect().width;
+      const style = item.draggingDomRef.current.style;
+      const rect = item.draggingDomRef.current.getBoundingClientRect();
+
       const cloneNode = item.draggingDomRef.current.cloneNode(true);
-      cloneNode.style.width = width + "px";
+      const marginTop = style.marginTop.replace("px", "");
+      const marginBottom = style.marginBottom.replace("px", "");
+
+      cloneNode.style.width = rect.width + "px";
       cloneNode.style.boxSizing = "border-box";
+      cloneNode.style.transform = `translate(-${marginTop}px, -${marginBottom}px)`;
+
       previewRef.current?.appendChild(cloneNode);
     } else {
       while (previewRef.current?.firstChild) {
