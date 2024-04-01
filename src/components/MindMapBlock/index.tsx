@@ -19,7 +19,8 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
     item: data,
   }));
 
-  const handleClickNode = () => {
+  const handleClickNode = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSelectedNode(data);
   };
 

@@ -3,7 +3,7 @@ import { ICoord } from "../types";
 
 const useDragCanvas = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startCoordRef = useRef<ICoord | null>();
 
   const handleMouseDown = (e: MouseEvent) => {
@@ -12,11 +12,11 @@ const useDragCanvas = () => {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging && scrollerRef.current && startCoordRef.current) {
+    if (isDragging && scrollContainerRef.current && startCoordRef.current) {
       const { clientX, clientY } = e;
       const x = startCoordRef.current.x - clientX;
       const y = startCoordRef.current.y - clientY;
-      scrollerRef.current.scrollBy(x, y);
+      scrollContainerRef.current.scrollBy(x, y);
       startCoordRef.current = { x: e.clientX, y: e.clientY };
     }
   };
@@ -27,7 +27,7 @@ const useDragCanvas = () => {
   };
 
   return {
-    scrollerRef,
+    scrollContainerRef,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,

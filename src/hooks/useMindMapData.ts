@@ -35,7 +35,7 @@ const useMindMapData = (sourceData: INode) => {
       if (!parent) return;
       appendChildNode(parent);
     },
-    [data]
+    [data, appendChildNode]
   );
 
   const removeNodeBlock = useCallback((selectedNode: INode | undefined) => {

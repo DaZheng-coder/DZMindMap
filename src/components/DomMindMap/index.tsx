@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useRef, useState } from "react";
+import { FC, useCallback, useLayoutEffect, useRef, useState } from "react";
 import { ILineCoord, INode } from "../../types";
 import MindMapBlock from "../MindMapBlock";
 import SvgContainer from "../SvgContainer";
@@ -30,7 +30,7 @@ const DomMindMap: FC = () => {
 
   const {
     isDragging,
-    scrollerRef,
+    scrollContainerRef,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -57,7 +57,7 @@ const DomMindMap: FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [appendChildNode, selectedNode]);
+  }, [appendChildNode, selectedNode, removeNodeBlock, appendSameLevelNode]);
 
   useLayoutEffect(() => {
     if (mindMapWrapRef.current) {
@@ -69,9 +69,15 @@ const DomMindMap: FC = () => {
     }
   }, [mindMapWrapRef, data]);
 
+  const handleContainerClick = useCallback(
+    () => setSelectedNode(undefined),
+    [setSelectedNode]
+  );
+
   return (
     <div
-      ref={scrollerRef}
+      ref={scrollContainerRef}
+      onClick={handleContainerClick}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
