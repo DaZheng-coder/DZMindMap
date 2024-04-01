@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useRef } from "react";
 import MindMapNode from "../MindMapNode";
 import { INode } from "../../types";
-import { useDrag, useDrop } from "react-dnd";
+import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
 interface IDomMindTreeProps {
@@ -28,17 +28,25 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    canDrag: (monitor) => {
-      return !isRoot;
-    },
+    canDrag: () => !isRoot,
   }));
 
-  const [collectedProps, drop] = useDrop(() => ({
+  const [{ isOver }, drop] = useDrop(() => ({
     accept: "MindMap",
     hover: (item, monitor) => {
       const hover = monitor.isOver({ shallow: true });
       if (hover) {
-        // console.log("*** item", item, data.label);
+        console.log("*** item", item, data.label);
+      }
+    },
+    collect: (monitor: DropTargetMonitor) => {
+      const draggingData = monitor.getItem();
+      if (draggingData?.data?.id === data.id) {
+        return false;
+      } else {
+        return {
+          isOver: monitor.isOver({ shallow: true }),
+        };
       }
     },
   }));

@@ -1,4 +1,4 @@
-import { FC, LegacyRef, ReactNode, forwardRef } from "react";
+import { FC, ReactNode, forwardRef } from "react";
 
 interface IMindMapNodeProps {
   id: string;
