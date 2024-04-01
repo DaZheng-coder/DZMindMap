@@ -8,12 +8,14 @@ interface IDomMindTreeProps {
   data: INode;
   selectedNode: INode | undefined;
   setSelectedNode: (node: INode) => void;
+  cls?: string;
 }
 
 const MindMapBlock: FC<IDomMindTreeProps> = ({
   data,
   selectedNode,
   setSelectedNode,
+  cls = "",
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
 
@@ -52,7 +54,7 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
   return (
     <div
       ref={blockRef}
-      className="tw-flex tw-z-1"
+      className={`tw-flex tw-z-1 ${cls}`}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div
