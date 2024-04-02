@@ -9,7 +9,12 @@ const useMindMapData = (sourceData: INode) => {
   const [selectedNode, setSelectedNode] = useState<INode>();
 
   const appendChildNode = useCallback(
-    (selectedNode: INode | undefined, index?: number) => {
+    (
+      selectedNode: INode | undefined,
+      index?: number,
+      sourceNode?: INode,
+      pos: "before" | "after" = "after"
+    ) => {
       if (!selectedNode) return;
       setData((data) => {
         const newData = cloneDeep(data);
@@ -18,17 +23,21 @@ const useMindMapData = (sourceData: INode) => {
         if (!node.children) {
           node.children = [];
         }
-        const newNode = {
+        const targetNode = sourceNode || {
           id: nanoid(),
           label: nanoid(),
           children: [],
         };
         if (typeof index === "number") {
-          node.children.splice(index + 1, 0, newNode);
+          node.children.splice(
+            pos === "before" ? index : index + 1,
+            0,
+            targetNode
+          );
         } else {
-          node.children.push(newNode);
+          node.children.push(targetNode);
         }
-        setSelectedNode(newNode);
+        setSelectedNode(targetNode);
         return newData;
       });
     },
@@ -36,11 +45,15 @@ const useMindMapData = (sourceData: INode) => {
   );
 
   const appendSameLevelNode = useCallback(
-    (selectedNode: INode | undefined) => {
+    (
+      selectedNode: INode | undefined,
+      sourceNode?: INode,
+      pos: "before" | "after" = "after"
+    ) => {
       if (!selectedNode) return;
       const res = findNodeParent(data, selectedNode.id);
       if (!res) return;
-      appendChildNode(res.parentNode, res.curNodeIndex);
+      appendChildNode(res.parentNode, res.curNodeIndex, sourceNode, pos);
     },
     [data, appendChildNode]
   );

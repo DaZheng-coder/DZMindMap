@@ -1,26 +1,25 @@
-import { FC, useCallback, useEffect, useRef } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import MindMapNode from "../MindMapNode";
-import { INode } from "../../types";
-import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
+import { INode, TPreviewVisible } from "../../types";
+import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
-interface IDomMindTreeProps {
+interface IMindMapBlockProps {
   data: INode;
   selectedNode: INode | undefined;
   setSelectedNode: (node: INode) => void;
-  cls?: string;
   isRoot?: boolean;
 }
 
-const MindMapBlock: FC<IDomMindTreeProps> = ({
+const MindMapBlock: FC<IMindMapBlockProps> = ({
   data,
   selectedNode,
   setSelectedNode,
-  cls = "",
   isRoot = false,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
+  const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
@@ -31,29 +30,50 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
     canDrag: () => !isRoot,
   }));
 
+  const handleOver = (draggingOffset: XYCoord | null) => {
+    const rect = document.getElementById(data.id)?.getBoundingClientRect();
+    if (rect && draggingOffset) {
+      const centerX = (rect.right - rect.left) / 2 + rect.left;
+      const centerY = (rect.top - rect.bottom) / 2 + rect.top;
+      if (draggingOffset.x <= centerX) {
+        const pos = draggingOffset.y <= centerY ? "top" : "bottom";
+        setPreviewVisible(pos);
+      } else {
+        setPreviewVisible("lastChild");
+      }
+    }
+  };
+
+  const handleLeave = () => {
+    setPreviewVisible(false);
+  };
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "MindMap",
     hover: (item, monitor) => {
-      const hover = monitor.isOver({ shallow: true });
-      if (hover) {
-        console.log("*** item", item, data.label);
+      const isOver = monitor.isOver({ shallow: true });
+      if (isOver) {
+        const draggingOffset = monitor.getClientOffset();
+        handleOver(draggingOffset);
       }
     },
-    collect: (monitor: DropTargetMonitor) => {
-      const draggingData = monitor.getItem();
-      if (draggingData?.data?.id === data.id) {
-        return false;
-      } else {
-        return {
-          isOver: monitor.isOver({ shallow: true }),
-        };
-      }
-    },
+    collect: (monitor: DropTargetMonitor) => ({
+      isOver:
+        monitor.getItem()?.data?.id === data.id
+          ? undefined
+          : monitor.isOver({ shallow: true }),
+    }),
   }));
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
+
+  useEffect(() => {
+    if (!isOver) {
+      handleLeave();
+    }
+  }, [isOver]);
 
   const handleClickNode = useCallback(
     (e: React.MouseEvent) => {
@@ -69,12 +89,12 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
   return (
     <div
       ref={blockRef}
-      className={`tw-flex tw-z-1 ${cls} ${
+      className={`tw-flex tw-z-1 ${
         isDragging ? "tw-opacity-60" : "tw-opacity-100"
       }`}
     >
       <div
-        className={`tw-flex hover:tw-cursor-pointer tw-items-center `}
+        className={`tw-relative tw-flex hover:tw-cursor-pointer tw-items-center `}
         onClick={handleClickNode}
       >
         <MindMapNode
@@ -83,20 +103,22 @@ const MindMapBlock: FC<IDomMindTreeProps> = ({
           selectId={selectedNode?.id || ""}
           id={data.id}
           label={data.label}
+          previewVisible={previewVisible}
         />
       </div>
-      {data.children && data.children.length ? (
-        <div className="tw-flex tw-flex-col">
-          {data.children.map((child) => (
-            <MindMapBlock
-              key={child.id}
-              data={child}
-              selectedNode={selectedNode}
-              setSelectedNode={setSelectedNode}
-            />
-          ))}
-        </div>
-      ) : null}
+      <div className="tw-flex tw-flex-col tw-relative">
+        {(data.children || []).map((child) => (
+          <MindMapBlock
+            key={child.id}
+            data={child}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
+          />
+        ))}
+        {previewVisible === "lastChild" && (
+          <div className="tw-absolute tw-top-[100%] tw-text-black">preview</div>
+        )}
+      </div>
     </div>
   );
 };

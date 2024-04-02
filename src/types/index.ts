@@ -16,3 +16,5 @@ export interface ILineCoord {
   end: ICoord;
   turn?: "start" | "end";
 }
+
+export type TPreviewVisible = false | "top" | "bottom" | "lastChild";
