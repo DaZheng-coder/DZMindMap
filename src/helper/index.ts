@@ -28,11 +28,15 @@ export const findNode = (data: INode, id: string): INode | undefined => {
   }
 };
 
-export const findNodeParent = (data: INode, id: string): INode | undefined => {
+export const findNodeParent = (
+  data: INode,
+  id: string
+): { parentNode: INode; curNodeIndex: number } | undefined => {
   if (data.id === id || !data.children) return;
-  if (data.children.some((child) => child.id === id)) return data;
+  const index = data.children.findIndex((child) => child.id === id);
+  if (index !== -1) return { parentNode: data, curNodeIndex: index };
   for (const child of data.children) {
-    const node = findNodeParent(child, id);
-    if (node) return node;
+    const res = findNodeParent(child, id);
+    if (res) return res;
   }
 };
