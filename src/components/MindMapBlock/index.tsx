@@ -10,6 +10,11 @@ interface IMindMapBlockProps {
   selectedNode: INode | undefined;
   setSelectedNode: (node: INode) => void;
   isRoot?: boolean;
+  moveNodeBlock: (
+    selectedNode: INode,
+    movingNode: INode,
+    pos: TPreviewVisible
+  ) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
@@ -17,6 +22,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   selectedNode,
   setSelectedNode,
   isRoot = false,
+  moveNodeBlock,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -31,17 +37,18 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     canDrag: () => !isRoot,
   }));
 
-  const handleOver = (draggingOffset: XYCoord | null) => {
+  const getPreInsertPos = (draggingOffset: XYCoord | null) => {
     const rect = document.getElementById(data.id)?.getBoundingClientRect();
     if (rect && draggingOffset) {
       const centerX = (rect.width / 3) * 2 + rect.left;
       const centerY = rect.height / 2 + rect.top;
       if (draggingOffset.x <= centerX) {
-        const pos = draggingOffset.y <= centerY ? "top" : "bottom";
-        setPreviewVisible(pos);
+        return draggingOffset.y <= centerY ? "top" : "bottom";
       } else {
-        setPreviewVisible("lastChild");
+        return "lastChild";
       }
+    } else {
+      return false;
     }
   };
 
@@ -51,14 +58,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "MindMap",
-    hover: (item, monitor) => {
-      const isOver = monitor.isOver({ shallow: true });
-      const draggingNode = item.data;
-      if (isOver && draggingNode.id !== data.id) {
-        const draggingOffset = monitor.getClientOffset();
-        handleOver(draggingOffset);
-      }
-    },
     collect: (monitor: DropTargetMonitor) => {
       const draggingNode = monitor.getItem()?.data;
       return {
@@ -67,6 +66,23 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             ? undefined
             : monitor.isOver({ shallow: true }),
       };
+    },
+    hover: (item, monitor) => {
+      const isOver = monitor.isOver({ shallow: true });
+      const draggingNode = item.data;
+      if (isOver && draggingNode.id !== data.id) {
+        const draggingOffset = monitor.getClientOffset();
+        const pos = getPreInsertPos(draggingOffset);
+        setPreviewVisible(pos);
+      }
+    },
+    drop: (item, monitor) => {
+      const draggingNode = item.data;
+      const isOver = monitor.isOver({ shallow: true });
+      if (isOver) {
+        const pos = getPreInsertPos(monitor.getClientOffset());
+        moveNodeBlock(data, draggingNode, pos);
+      }
     },
   }));
 
@@ -118,6 +134,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             data={child}
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNode}
+            moveNodeBlock={moveNodeBlock}
           />
         ))}
         {previewVisible === "lastChild" && (

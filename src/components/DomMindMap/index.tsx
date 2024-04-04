@@ -27,6 +27,7 @@ const DomMindMap: FC = () => {
     removeNodeBlock,
     selectedNode,
     setSelectedNode,
+    moveNodeBlock,
   } = useMindMapData(mockData);
 
   const {
@@ -97,6 +98,7 @@ const DomMindMap: FC = () => {
             data={data}
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNode}
+            moveNodeBlock={moveNodeBlock}
             isRoot
           />
           <CustomDragLayer />
