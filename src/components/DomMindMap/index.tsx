@@ -97,9 +97,6 @@ const DomMindMap: FC = () => {
             data={data}
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNode}
-            appendChildNode={appendChildNode}
-            appendSameLevelNode={appendSameLevelNode}
-            removeNodeBlock={removeNodeBlock}
             isRoot
           />
           <CustomDragLayer />

@@ -3,6 +3,7 @@ import MindMapNode from "../MindMapNode";
 import { INode, TPreviewVisible } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
+import PreviewNode from "../PreviewNode";
 
 interface IMindMapBlockProps {
   data: INode;
@@ -33,8 +34,8 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const handleOver = (draggingOffset: XYCoord | null) => {
     const rect = document.getElementById(data.id)?.getBoundingClientRect();
     if (rect && draggingOffset) {
-      const centerX = (rect.right - rect.left) / 2 + rect.left;
-      const centerY = (rect.top - rect.bottom) / 2 + rect.top;
+      const centerX = (rect.width / 3) * 2 + rect.left;
+      const centerY = rect.height / 2 + rect.top;
       if (draggingOffset.x <= centerX) {
         const pos = draggingOffset.y <= centerY ? "top" : "bottom";
         setPreviewVisible(pos);
@@ -52,17 +53,21 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     accept: "MindMap",
     hover: (item, monitor) => {
       const isOver = monitor.isOver({ shallow: true });
-      if (isOver) {
+      const draggingNode = item.data;
+      if (isOver && draggingNode.id !== data.id) {
         const draggingOffset = monitor.getClientOffset();
         handleOver(draggingOffset);
       }
     },
-    collect: (monitor: DropTargetMonitor) => ({
-      isOver:
-        monitor.getItem()?.data?.id === data.id
-          ? undefined
-          : monitor.isOver({ shallow: true }),
-    }),
+    collect: (monitor: DropTargetMonitor) => {
+      const draggingNode = monitor.getItem()?.data;
+      return {
+        isOver:
+          draggingNode?.id === data.id
+            ? undefined
+            : monitor.isOver({ shallow: true }),
+      };
+    },
   }));
 
   useEffect(() => {
@@ -116,7 +121,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           />
         ))}
         {previewVisible === "lastChild" && (
-          <div className="tw-absolute tw-top-[100%] tw-text-black">preview</div>
+          <PreviewNode className=" tw-top-[33%]" />
         )}
       </div>
     </div>
