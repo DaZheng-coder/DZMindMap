@@ -23,10 +23,11 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
     <div
       id={id}
       ref={ref}
+      style={{ margin: `${marginY}px ${marginX}px` }}
       onMouseDown={(e) => e.stopPropagation()}
       className={`${
         selectId === id ? selectedCls : unSelectedCls
-      } tw-mx-[${marginX}px] tw-my-[${marginY}px] tw-relative tw-py-[6px] tw-px-[10px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
+      } tw-relative tw-py-[6px] tw-px-[10px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
     >
       {previewVisible === "top" && (
         <PreviewNode
