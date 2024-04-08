@@ -5,7 +5,7 @@ import PreviewNode from "../PreviewNode";
 interface IMindMapNodeProps {
   id: string;
   label: ReactNode;
-  selectId: string;
+  selectedNodeId: string;
   previewVisible: TPreviewVisible;
 }
 
@@ -18,7 +18,7 @@ const translateY = marginY / 2 - 1;
 const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
   HTMLDivElement,
   IMindMapNodeProps
->(({ id, label, selectId, previewVisible }, ref) => {
+>(({ id, label, selectedNodeId, previewVisible }, ref) => {
   return (
     <div
       id={id}
@@ -26,7 +26,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       style={{ margin: `${marginY}px ${marginX}px` }}
       onMouseDown={(e) => e.stopPropagation()}
       className={`${
-        selectId === id ? selectedCls : unSelectedCls
+        selectedNodeId === id ? selectedCls : unSelectedCls
       } tw-relative tw-py-[6px] tw-px-[10px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
     >
       {previewVisible === "top" && (

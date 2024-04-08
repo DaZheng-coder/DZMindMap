@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 export interface INode {
   id: string;
   label: ReactNode;
-  children?: INode[];
+  children: INode[];
 }
 
 export interface ICoord {

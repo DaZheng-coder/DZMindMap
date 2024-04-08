@@ -6,23 +6,17 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import PreviewNode from "../PreviewNode";
 
 interface IMindMapBlockProps {
-  data: INode;
-  selectedNode: INode | undefined;
-  setSelectedNode: (node: INode) => void;
+  node: INode;
+  selectedNodeId: string | undefined;
+  setSelectedNodeId: (nodeId: string) => void;
   isRoot?: boolean;
-  moveNodeBlock: (
-    selectedNode: INode,
-    movingNode: INode,
-    pos: TPreviewVisible
-  ) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
-  data,
-  selectedNode,
-  setSelectedNode,
+  node,
+  selectedNodeId,
+  setSelectedNodeId,
   isRoot = false,
-  moveNodeBlock,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -30,7 +24,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
-    item: { data, draggingDomRef: nodeRef },
+    item: { draggingNode: node, draggingDomRef: nodeRef },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -38,7 +32,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   }));
 
   const getPreInsertPos = (draggingOffset: XYCoord | null) => {
-    const rect = document.getElementById(data.id)?.getBoundingClientRect();
+    const rect = document.getElementById(node.id)?.getBoundingClientRect();
     if (rect && draggingOffset) {
       const centerX = (rect.width / 3) * 2 + rect.left;
       const centerY = rect.height / 2 + rect.top;
@@ -59,29 +53,29 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "MindMap",
     collect: (monitor: DropTargetMonitor) => {
-      const draggingNode = monitor.getItem()?.data;
+      const draggingNode = monitor.getItem()?.draggingNode;
       return {
         isOver:
-          draggingNode?.id === data.id
+          draggingNode?.id === node.id
             ? undefined
             : monitor.isOver({ shallow: true }),
       };
     },
     hover: (item, monitor) => {
       const isOver = monitor.isOver({ shallow: true });
-      const draggingNode = item.data;
-      if (isOver && draggingNode.id !== data.id) {
+      const draggingNode = item.draggingNode;
+      if (isOver && draggingNode.id !== node.id) {
         const draggingOffset = monitor.getClientOffset();
         const pos = getPreInsertPos(draggingOffset);
         setPreviewVisible(pos);
       }
     },
     drop: (item, monitor) => {
-      const draggingNode = item.data;
+      const draggingNode = item.draggingNode;
       const isOver = monitor.isOver({ shallow: true });
       if (isOver) {
-        const pos = getPreInsertPos(monitor.getClientOffset());
-        moveNodeBlock(data, draggingNode, pos);
+        // const pos = getPreInsertPos(monitor.getClientOffset());
+        // moveNodeBlock(data, draggingNode, pos);
       }
     },
   }));
@@ -99,9 +93,9 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const handleClickNode = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      setSelectedNode(data);
+      setSelectedNodeId(node.id);
     },
-    [data, setSelectedNode]
+    [node, setSelectedNodeId]
   );
 
   drag(nodeRef);
@@ -120,21 +114,21 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       >
         <MindMapNode
           ref={nodeRef}
-          key={data.id}
-          selectId={selectedNode?.id || ""}
-          id={data.id}
-          label={data.label}
+          key={node.id}
+          selectedNodeId={selectedNodeId || ""}
+          id={node.id}
+          label={node.label}
           previewVisible={previewVisible}
         />
       </div>
       <div className="tw-flex tw-flex-col tw-relative">
-        {(data.children || []).map((child) => (
+        {(node.children || []).map((child) => (
           <MindMapBlock
             key={child.id}
-            data={child}
-            selectedNode={selectedNode}
-            setSelectedNode={setSelectedNode}
-            moveNodeBlock={moveNodeBlock}
+            node={child}
+            selectedNodeId={selectedNodeId}
+            setSelectedNodeId={setSelectedNodeId}
+            // moveNodeBlock={moveNodeBlock}
           />
         ))}
         {previewVisible === "lastChild" && (

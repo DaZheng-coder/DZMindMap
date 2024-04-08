@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { ICoord, ILineCoord, INode } from "../types";
 
 export const initLineCoords = (
@@ -39,4 +40,35 @@ export const findNodeParent = (
     const res = findNodeParent(child, id);
     if (res) return res;
   }
+};
+
+export const findNodesByIds = (
+  mindMapData: INode,
+  nodeIds: (string | undefined)[]
+): { node: INode; parentNode: INode; index: number }[] => {
+  const n = nodeIds.length;
+  const res = new Array(n);
+  let finished = 0;
+  const find = (node: INode, i: number, parentNode?: INode) => {
+    if (finished === n) return;
+    const resIndex = nodeIds.findIndex((id) => node.id === id);
+    if (resIndex !== -1) {
+      res[resIndex] = { node, parentNode, index: i };
+      finished++;
+    }
+    for (let i = 0; i < node.children.length; i++) {
+      find(node.children[i], i, node);
+    }
+  };
+  find(mindMapData, -1);
+  return res;
+};
+
+export const getNewNode = () => {
+  const id = nanoid();
+  return {
+    id,
+    label: id,
+    children: [],
+  };
 };

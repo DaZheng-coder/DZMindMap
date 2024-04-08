@@ -13,6 +13,7 @@ import { CustomDragLayer } from "../CustomDragLayer";
 const mockData: INode = {
   id: nanoid(),
   label: nanoid(),
+  children: [],
 };
 
 const DomMindMap: FC = () => {
@@ -21,13 +22,12 @@ const DomMindMap: FC = () => {
   const mindMapWrapRef = useRef<HTMLDivElement>(null);
 
   const {
-    data,
+    mindMapData,
     appendChildNode,
-    appendSameLevelNode,
-    removeNodeBlock,
-    selectedNode,
-    setSelectedNode,
-    moveNodeBlock,
+    appendSiblingNode,
+    removeNode,
+    selectedNodeId,
+    setSelectedNodeId,
   } = useMindMapData(mockData);
 
   const {
@@ -44,14 +44,14 @@ const DomMindMap: FC = () => {
       if (["Tab", "Enter"].includes(e.key)) e.preventDefault();
       switch (e.key) {
         case "Tab":
-          appendChildNode(selectedNode);
+          appendChildNode(selectedNodeId);
           break;
         case "Enter":
-          appendSameLevelNode(selectedNode);
+          appendSiblingNode(selectedNodeId, "after");
           break;
         case "Backspace":
         case "Delete":
-          removeNodeBlock(selectedNode);
+          removeNode(selectedNodeId);
           break;
       }
     };
@@ -59,21 +59,21 @@ const DomMindMap: FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [appendChildNode, selectedNode, removeNodeBlock, appendSameLevelNode]);
+  }, [appendChildNode, appendSiblingNode, removeNode, selectedNodeId]);
 
   useLayoutEffect(() => {
     if (mindMapWrapRef.current) {
       const rect = mindMapWrapRef.current.getBoundingClientRect();
       const originCoords = { x: rect.left, y: rect.top };
       const lineCoords: ILineCoord[] = [];
-      initLineCoords(data, originCoords, lineCoords);
+      initLineCoords(mindMapData, originCoords, lineCoords);
       setLineCoords(lineCoords);
     }
-  }, [mindMapWrapRef, data]);
+  }, [mindMapWrapRef, mindMapData]);
 
   const handleContainerClick = useCallback(
-    () => setSelectedNode(undefined),
-    [setSelectedNode]
+    () => setSelectedNodeId(undefined),
+    [setSelectedNodeId]
   );
 
   return (
@@ -95,10 +95,10 @@ const DomMindMap: FC = () => {
         >
           <SvgContainer lineCoords={lineCoords} />
           <MindMapBlock
-            data={data}
-            selectedNode={selectedNode}
-            setSelectedNode={setSelectedNode}
-            moveNodeBlock={moveNodeBlock}
+            node={mindMapData}
+            selectedNodeId={selectedNodeId}
+            setSelectedNodeId={setSelectedNodeId}
+            // moveNodeBlock={moveNodeBlock}
             isRoot
           />
           <CustomDragLayer />
