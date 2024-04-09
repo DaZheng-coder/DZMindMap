@@ -4,23 +4,57 @@ import { INode, TPreviewVisible } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import PreviewNode from "../PreviewNode";
+import { NODE_MARGIN_Y } from "../../constants";
 
 interface IMindMapBlockProps {
   node: INode;
-  selectedNodeId: string | undefined;
-  setSelectedNodeId: (nodeId: string) => void;
+  selectNodeId: string | undefined;
+  setSelectNodeId: (nodeId: string) => void;
   isRoot?: boolean;
+  appendChildNode: (
+    selectNodeId: string | undefined,
+    appendingNodeId?: string | undefined
+  ) => void;
+  appendSiblingNode: (
+    selectNodeId: string | undefined,
+    insert: "after" | "before",
+    appendingNodeId?: string | undefined
+  ) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
   node,
-  selectedNodeId,
-  setSelectedNodeId,
+  selectNodeId,
+  setSelectNodeId,
   isRoot = false,
+  appendChildNode,
+  appendSiblingNode,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
+
+  const getPreInsertPos = (
+    draggingOffset: XYCoord | null,
+    isRoot: boolean = false
+  ) => {
+    const rect = document.getElementById(node.id)?.getBoundingClientRect();
+    if (rect && draggingOffset) {
+      const centerX = (rect.width / 3) * 2 + rect.left;
+      const centerY = rect.height / 2 + rect.top;
+      if (draggingOffset.x <= centerX) {
+        if (isRoot) {
+          return "lastChild";
+        } else {
+          return draggingOffset.y <= centerY ? "top" : "bottom";
+        }
+      } else {
+        return "lastChild";
+      }
+    } else {
+      return false;
+    }
+  };
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
@@ -30,21 +64,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     }),
     canDrag: () => !isRoot,
   }));
-
-  const getPreInsertPos = (draggingOffset: XYCoord | null) => {
-    const rect = document.getElementById(node.id)?.getBoundingClientRect();
-    if (rect && draggingOffset) {
-      const centerX = (rect.width / 3) * 2 + rect.left;
-      const centerY = rect.height / 2 + rect.top;
-      if (draggingOffset.x <= centerX) {
-        return draggingOffset.y <= centerY ? "top" : "bottom";
-      } else {
-        return "lastChild";
-      }
-    } else {
-      return false;
-    }
-  };
 
   const handleLeave = () => {
     setPreviewVisible(false);
@@ -66,7 +85,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       const draggingNode = item.draggingNode;
       if (isOver && draggingNode.id !== node.id) {
         const draggingOffset = monitor.getClientOffset();
-        const pos = getPreInsertPos(draggingOffset);
+        const pos = getPreInsertPos(draggingOffset, isRoot);
         setPreviewVisible(pos);
       }
     },
@@ -74,8 +93,16 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       const draggingNode = item.draggingNode;
       const isOver = monitor.isOver({ shallow: true });
       if (isOver) {
-        // const pos = getPreInsertPos(monitor.getClientOffset());
-        // moveNodeBlock(data, draggingNode, pos);
+        const pos = getPreInsertPos(monitor.getClientOffset(), isRoot);
+        if (pos === "lastChild") {
+          appendChildNode(node.id, draggingNode.id);
+        } else {
+          appendSiblingNode(
+            node.id,
+            pos === "top" ? "before" : "after",
+            draggingNode.id
+          );
+        }
       }
     },
   }));
@@ -93,9 +120,9 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const handleClickNode = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      setSelectedNodeId(node.id);
+      setSelectNodeId(node.id);
     },
-    [node, setSelectedNodeId]
+    [node, setSelectNodeId]
   );
 
   drag(nodeRef);
@@ -115,7 +142,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
         <MindMapNode
           ref={nodeRef}
           key={node.id}
-          selectedNodeId={selectedNodeId || ""}
+          selectNodeId={selectNodeId || ""}
           id={node.id}
           label={node.label}
           previewVisible={previewVisible}
@@ -126,13 +153,21 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           <MindMapBlock
             key={child.id}
             node={child}
-            selectedNodeId={selectedNodeId}
-            setSelectedNodeId={setSelectedNodeId}
-            // moveNodeBlock={moveNodeBlock}
+            selectNodeId={selectNodeId}
+            setSelectNodeId={setSelectNodeId}
+            appendChildNode={appendChildNode}
+            appendSiblingNode={appendSiblingNode}
           />
         ))}
         {previewVisible === "lastChild" && (
-          <PreviewNode className=" tw-top-[33%]" />
+          <PreviewNode
+            style={{
+              top: node.children.length
+                ? `calc(100% - ${NODE_MARGIN_Y / 2 + 3}px)`
+                : "calc(50% - 14px)",
+              left: "33px",
+            }}
+          />
         )}
       </div>
     </div>

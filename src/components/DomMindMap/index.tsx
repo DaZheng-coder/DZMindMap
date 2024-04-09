@@ -26,8 +26,8 @@ const DomMindMap: FC = () => {
     appendChildNode,
     appendSiblingNode,
     removeNode,
-    selectedNodeId,
-    setSelectedNodeId,
+    selectNodeId,
+    setSelectNodeId,
   } = useMindMapData(mockData);
 
   const {
@@ -44,14 +44,14 @@ const DomMindMap: FC = () => {
       if (["Tab", "Enter"].includes(e.key)) e.preventDefault();
       switch (e.key) {
         case "Tab":
-          appendChildNode(selectedNodeId);
+          appendChildNode(selectNodeId);
           break;
         case "Enter":
-          appendSiblingNode(selectedNodeId, "after");
+          appendSiblingNode(selectNodeId, "after");
           break;
         case "Backspace":
         case "Delete":
-          removeNode(selectedNodeId);
+          removeNode(selectNodeId);
           break;
       }
     };
@@ -59,7 +59,7 @@ const DomMindMap: FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [appendChildNode, appendSiblingNode, removeNode, selectedNodeId]);
+  }, [appendChildNode, appendSiblingNode, removeNode, selectNodeId]);
 
   useLayoutEffect(() => {
     if (mindMapWrapRef.current) {
@@ -72,8 +72,8 @@ const DomMindMap: FC = () => {
   }, [mindMapWrapRef, mindMapData]);
 
   const handleContainerClick = useCallback(
-    () => setSelectedNodeId(undefined),
-    [setSelectedNodeId]
+    () => setSelectNodeId(undefined),
+    [setSelectNodeId]
   );
 
   return (
@@ -96,9 +96,10 @@ const DomMindMap: FC = () => {
           <SvgContainer lineCoords={lineCoords} />
           <MindMapBlock
             node={mindMapData}
-            selectedNodeId={selectedNodeId}
-            setSelectedNodeId={setSelectedNodeId}
-            // moveNodeBlock={moveNodeBlock}
+            selectNodeId={selectNodeId}
+            setSelectNodeId={setSelectNodeId}
+            appendChildNode={appendChildNode}
+            appendSiblingNode={appendSiblingNode}
             isRoot
           />
           <CustomDragLayer />

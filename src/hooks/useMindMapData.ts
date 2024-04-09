@@ -5,17 +5,23 @@ import { cloneDeep } from "lodash";
 
 const useMindMapData = (initData: INode) => {
   const [mindMapData, setMindMapData] = useState<INode>(initData);
-  const [selectedNodeId, setSelectedNodeId] = useState<string>();
+  const [selectNodeId, setSelectNodeId] = useState<string>();
 
   const appendChildNode = useCallback(
-    (selectedNodeId: string | undefined, appendingNodeId?: string) => {
-      if (!selectedNodeId) return;
+    (selectNodeId: string | undefined, appendingNodeId?: string) => {
+      if (!selectNodeId || selectNodeId === appendingNodeId) return;
       setMindMapData((data) => {
         const newData = cloneDeep(data);
-        const res = findNodesByIds(newData, [selectedNodeId, appendingNodeId]);
-        const appendingNode = appendingNodeId ? res[1].node : getNewNode();
+        const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
+        let appendingNode: INode;
+        if (appendingNodeId) {
+          appendingNode = res[1].node;
+          res[1].parentNode.children.splice(res[1].index, 1);
+        } else {
+          appendingNode = getNewNode();
+        }
         res[0].node.children.push(appendingNode);
-        setSelectedNodeId(appendingNode.id);
+        setSelectNodeId(appendingNode.id);
         return newData;
       });
     },
@@ -24,14 +30,14 @@ const useMindMapData = (initData: INode) => {
 
   const appendSiblingNode = useCallback(
     (
-      selectedNodeId: string | undefined,
+      selectNodeId: string | undefined,
       insert: "before" | "after",
       appendingNodeId?: string
     ) => {
-      if (!selectedNodeId) return;
+      if (!selectNodeId || selectNodeId === appendingNodeId) return;
       setMindMapData((data) => {
         const newData = cloneDeep(data);
-        const res = findNodesByIds(newData, [selectedNodeId, appendingNodeId]);
+        const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
         const selectedParentNode = res[0].parentNode;
         let appendingNode: INode;
         if (appendingNodeId) {
@@ -53,20 +59,20 @@ const useMindMapData = (initData: INode) => {
             );
           }
         }
-        setSelectedNodeId(appendingNode.id);
+        setSelectNodeId(appendingNode.id);
         return newData;
       });
     },
     []
   );
 
-  const removeNode = useCallback((selectedId: string | undefined) => {
-    if (!selectedId) return;
+  const removeNode = useCallback((selectNodeId: string | undefined) => {
+    if (!selectNodeId) return;
     setMindMapData((data) => {
       const newData = cloneDeep(data);
-      const res = findNodesByIds(newData, [selectedId]);
+      const res = findNodesByIds(newData, [selectNodeId]);
       res[0].parentNode.children.splice(res[0].index, 1);
-      setSelectedNodeId(res[0].parentNode.id);
+      setSelectNodeId(res[0].parentNode.id);
       return newData;
     });
   }, []);
@@ -76,8 +82,8 @@ const useMindMapData = (initData: INode) => {
     appendChildNode,
     appendSiblingNode,
     removeNode,
-    selectedNodeId,
-    setSelectedNodeId,
+    selectNodeId,
+    setSelectNodeId,
   };
 };
 

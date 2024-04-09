@@ -1,13 +1,14 @@
-import { FC } from "react";
+import { CSSProperties, FC } from "react";
 
 interface IPreviewNodeProps {
-  className?: string;
+  style: CSSProperties;
 }
 
-const PreviewNode: FC<IPreviewNodeProps> = ({ className = "" }) => {
+const PreviewNode: FC<IPreviewNodeProps> = ({ style = {} }) => {
   return (
     <div
-      className={`${className} tw-absolute tw-text-[#222] tw-bg-[skyblue] tw-p-[2px] tw-rounded-[4px]`}
+      style={style}
+      className="tw-absolute tw-text-[#222] tw-bg-[skyblue] tw-p-[2px] tw-rounded-[4px]"
     >
       preview
     </div>
