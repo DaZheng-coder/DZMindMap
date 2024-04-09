@@ -20,27 +20,6 @@ export const initLineCoords = (
   return endCoord;
 };
 
-export const findNode = (data: INode, id: string): INode | undefined => {
-  if (data.id === id) return data;
-  if (!data.children) return;
-  for (const child of data.children) {
-    const node = findNode(child, id);
-    if (node) return node;
-  }
-};
-
-export const findNodeParent = (
-  data: INode,
-  id: string
-): { parentNode: INode; curNodeIndex: number } | undefined => {
-  if (data.id === id || !data.children) return;
-  const index = data.children.findIndex((child) => child.id === id);
-  if (index !== -1) return { parentNode: data, curNodeIndex: index };
-  for (const child of data.children) {
-    const res = findNodeParent(child, id);
-    if (res) return res;
-  }
-};
 
 export const findNodesByIds = (
   mindMapData: INode,
