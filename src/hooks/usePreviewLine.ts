@@ -3,9 +3,13 @@ import { ILineCoord } from "../types";
 import { MIND_MAP_CONTAINER_ID, PREVIEW_NODE_ID } from "../constants";
 
 const usePreviewLine = () => {
-  const [lineCoord, setLineCoord] = useState<ILineCoord>();
+  const [lineCoord, setLineCoord] = useState<ILineCoord | null>(null);
 
-  const drawLine = useCallback((startNodeId: string) => {
+  const drawLine = useCallback((startNodeId?: string) => {
+    if (!startNodeId) {
+      setLineCoord(null);
+      return;
+    }
     const wrapRect = document
       .getElementById(MIND_MAP_CONTAINER_ID)
       ?.getBoundingClientRect();

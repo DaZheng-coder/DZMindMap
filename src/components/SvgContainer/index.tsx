@@ -3,7 +3,7 @@ import Line from "../Line";
 import { ILineCoord } from "../../types";
 
 interface ISvgContainerProps {
-  previewLineCoord?: ILineCoord;
+  previewLineCoord?: ILineCoord | null;
   lineCoords: ILineCoord[];
 }
 

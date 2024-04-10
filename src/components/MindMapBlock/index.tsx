@@ -22,6 +22,7 @@ interface IMindMapBlockProps {
     appendingNodeId?: string | undefined
   ) => void;
   drawLine: (startNodeId?: string) => void;
+  editNode: (nodeId: string, value: string) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
@@ -32,6 +33,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   isRoot = false,
   appendChildNode,
   appendSiblingNode,
+  editNode,
   drawLine,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
@@ -162,6 +164,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           id={node.id}
           label={node.label}
           previewVisible={previewVisible}
+          editNode={editNode}
         />
       </div>
       <div className="tw-flex tw-flex-col tw-relative">
@@ -175,6 +178,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             appendChildNode={appendChildNode}
             appendSiblingNode={appendSiblingNode}
             drawLine={drawLine}
+            editNode={editNode}
           />
         ))}
         {previewVisible === "lastChild" && (

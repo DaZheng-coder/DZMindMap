@@ -77,11 +77,21 @@ const useMindMapData = (initData: INode) => {
     });
   }, []);
 
+  const editNode = useCallback((nodeId: string, value: string) => {
+    setMindMapData((data) => {
+      const newData = cloneDeep(data);
+      const res = findNodesByIds(newData, [nodeId]);
+      res[0].node.label = value;
+      return newData;
+    });
+  }, []);
+
   return {
     mindMapData,
     appendChildNode,
     appendSiblingNode,
     removeNode,
+    editNode,
     selectNodeId,
     setSelectNodeId,
   };

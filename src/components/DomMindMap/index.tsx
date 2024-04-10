@@ -28,6 +28,7 @@ const DomMindMap: FC = () => {
     appendChildNode,
     appendSiblingNode,
     removeNode,
+    editNode,
     selectNodeId,
     setSelectNodeId,
   } = useMindMapData(mockData);
@@ -109,6 +110,7 @@ const DomMindMap: FC = () => {
             setSelectNodeId={setSelectNodeId}
             appendChildNode={appendChildNode}
             appendSiblingNode={appendSiblingNode}
+            editNode={editNode}
             drawLine={drawLine}
           />
           <CustomDragLayer />
