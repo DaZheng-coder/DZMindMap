@@ -9,6 +9,8 @@ import useDragCanvas from "../../hooks/useScroll";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CustomDragLayer } from "../CustomDragLayer";
+import usePreviewLine from "../../hooks/usePreviewLine";
+import { MIND_MAP_CONTAINER_ID } from "../../constants";
 
 const mockData: INode = {
   id: nanoid(),
@@ -37,6 +39,9 @@ const DomMindMap: FC = () => {
     handleMouseMove,
     handleMouseUp,
   } = useDragCanvas();
+
+  const { lineCoord: previewLineCoord, drawLine } =
+    usePreviewLine();
 
   useLayoutEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,17 +95,22 @@ const DomMindMap: FC = () => {
     >
       <DndProvider backend={HTML5Backend}>
         <div
+          id={MIND_MAP_CONTAINER_ID}
           ref={mindMapWrapRef}
           className="tw-relative tw-inline-block tw-m-auto "
         >
-          <SvgContainer lineCoords={lineCoords} />
+          <SvgContainer
+            previewLineCoord={previewLineCoord}
+            lineCoords={lineCoords}
+          />
           <MindMapBlock
+            isRoot
             node={mindMapData}
             selectNodeId={selectNodeId}
             setSelectNodeId={setSelectNodeId}
             appendChildNode={appendChildNode}
             appendSiblingNode={appendSiblingNode}
-            isRoot
+            drawLine={drawLine}
           />
           <CustomDragLayer />
         </div>

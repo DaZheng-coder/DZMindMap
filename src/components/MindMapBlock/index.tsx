@@ -8,6 +8,7 @@ import { NODE_MARGIN_Y } from "../../constants";
 
 interface IMindMapBlockProps {
   node: INode;
+  parentNodeId?: string;
   selectNodeId: string | undefined;
   setSelectNodeId: (nodeId: string) => void;
   isRoot?: boolean;
@@ -20,15 +21,18 @@ interface IMindMapBlockProps {
     insert: "after" | "before",
     appendingNodeId?: string | undefined
   ) => void;
+  drawLine: (startNodeId: string) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
   node,
+  parentNodeId,
   selectNodeId,
   setSelectNodeId,
   isRoot = false,
   appendChildNode,
   appendSiblingNode,
+  drawLine,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -86,6 +90,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       if (isOver && draggingNode.id !== node.id) {
         const draggingOffset = monitor.getClientOffset();
         const pos = getPreInsertPos(draggingOffset, isRoot);
+        drawLine(pos === "lastChild" ? node.id : parentNodeId || "");
         setPreviewVisible(pos);
       }
     },
@@ -153,10 +158,12 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           <MindMapBlock
             key={child.id}
             node={child}
+            parentNodeId={node.id}
             selectNodeId={selectNodeId}
             setSelectNodeId={setSelectNodeId}
             appendChildNode={appendChildNode}
             appendSiblingNode={appendSiblingNode}
+            drawLine={drawLine}
           />
         ))}
         {previewVisible === "lastChild" && (

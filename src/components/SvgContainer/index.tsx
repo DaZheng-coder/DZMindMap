@@ -3,10 +3,14 @@ import Line from "../Line";
 import { ILineCoord } from "../../types";
 
 interface ISvgContainerProps {
+  previewLineCoord?: ILineCoord;
   lineCoords: ILineCoord[];
 }
 
-const SvgContainer: FC<ISvgContainerProps> = ({ lineCoords }) => {
+const SvgContainer: FC<ISvgContainerProps> = ({
+  lineCoords,
+  previewLineCoord,
+}) => {
   return (
     <svg className="tw-absolute tw-left-0 tw-top-0 tw-w-full tw-h-full tw-z-[-1]">
       {lineCoords.map(({ start, end, turn }, index) => (
@@ -18,6 +22,15 @@ const SvgContainer: FC<ISvgContainerProps> = ({ lineCoords }) => {
           // showArrow={showArrow}
         />
       ))}
+      {previewLineCoord && (
+        <Line
+          key="preview_line"
+          start={previewLineCoord.start}
+          end={previewLineCoord.end}
+          turn={previewLineCoord.turn}
+          // showArrow={showArrow}
+        />
+      )}
       {/* <defs>
         <marker
           id="markerArrow"

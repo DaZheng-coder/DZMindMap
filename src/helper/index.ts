@@ -1,26 +1,37 @@
 import { nanoid } from "nanoid";
 import { ICoord, ILineCoord, INode } from "../types";
 
+/**
+ * 初始化所有连接线的起始点、终止点坐标
+ * @param mindMapData 思维导图总体数据
+ * @param originCoord 画布原点坐标
+ * @param lineCoords 存放结果数组
+ * @returns 结束点坐标
+ */
 export const initLineCoords = (
-  data: INode,
+  mindMapData: INode,
   originCoord: ICoord,
-  ILineCoords: ILineCoord[] = []
+  lineCoords: ILineCoord[] = []
 ): ICoord | undefined => {
-  const { id, children } = data;
+  const { id, children } = mindMapData;
   const startRect = document.getElementById(id)?.getBoundingClientRect();
   if (!startRect) return;
   const y = startRect.bottom - originCoord.y - startRect.height / 2;
   const startCoord = { x: startRect.right - originCoord.x, y };
   const endCoord = { x: startRect.left - originCoord.x, y };
   children?.forEach((child) => {
-    const endCoord = initLineCoords(child, originCoord, ILineCoords);
-    if (endCoord) ILineCoords.push({ start: startCoord, end: endCoord });
+    const endCoord = initLineCoords(child, originCoord, lineCoords);
+    if (endCoord) lineCoords.push({ start: startCoord, end: endCoord });
   });
-
   return endCoord;
 };
 
-
+/**
+ * 通过id寻找节点们
+ * @param mindMapData 思维导图总体数据
+ * @param nodeIds 节点id数组
+ * @returns 节点本身、父节点、在父节点里的索引
+ */
 export const findNodesByIds = (
   mindMapData: INode,
   nodeIds: (string | undefined)[]
