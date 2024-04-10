@@ -40,8 +40,7 @@ const DomMindMap: FC = () => {
     handleMouseUp,
   } = useDragCanvas();
 
-  const { lineCoord: previewLineCoord, drawLine } =
-    usePreviewLine();
+  const { lineCoord: previewLineCoord, drawLine } = usePreviewLine();
 
   useLayoutEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

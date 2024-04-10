@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import MindMapNode from "../MindMapNode";
-import { INode, TPreviewVisible } from "../../types";
+import { IDraggingItem, INode, TPreviewVisible } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import PreviewNode from "../PreviewNode";
@@ -21,7 +21,7 @@ interface IMindMapBlockProps {
     insert: "after" | "before",
     appendingNodeId?: string | undefined
   ) => void;
-  drawLine: (startNodeId: string) => void;
+  drawLine: (startNodeId?: string) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
@@ -60,22 +60,27 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     }
   };
 
+  const handleLeave = () => {
+    drawLine();
+    setPreviewVisible(false);
+  };
+
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
-    item: { draggingNode: node, draggingDomRef: nodeRef },
+    item: {
+      draggingNode: node,
+      draggingDomRef: nodeRef,
+      draggingNodeParentNodeId: parentNodeId,
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
     canDrag: () => !isRoot,
   }));
 
-  const handleLeave = () => {
-    setPreviewVisible(false);
-  };
-
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "MindMap",
-    collect: (monitor: DropTargetMonitor) => {
+    collect: (monitor: DropTargetMonitor<IDraggingItem>) => {
       const draggingNode = monitor.getItem()?.draggingNode;
       return {
         isOver:
@@ -87,6 +92,12 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     hover: (item, monitor) => {
       const isOver = monitor.isOver({ shallow: true });
       const draggingNode = item.draggingNode;
+      if (
+        node.children.length === 1 &&
+        node.children[0].id === draggingNode.id
+      ) {
+        return;
+      }
       if (isOver && draggingNode.id !== node.id) {
         const draggingOffset = monitor.getClientOffset();
         const pos = getPreInsertPos(draggingOffset, isRoot);
@@ -170,7 +181,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           <PreviewNode
             style={{
               top: node.children.length
-                ? `calc(100% - ${NODE_MARGIN_Y / 2 + 3}px)`
+                ? `calc(100% - ${Math.floor(NODE_MARGIN_Y / 2) + 3}px)`
                 : "calc(50% - 14px)",
               left: "33px",
             }}

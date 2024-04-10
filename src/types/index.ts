@@ -18,3 +18,8 @@ export interface ILineCoord {
 }
 
 export type TPreviewVisible = false | "top" | "bottom" | "lastChild";
+
+export interface IDraggingItem {
+  draggingNode: INode;
+  draggingDomRef: React.MutableRefObject<HTMLDivElement | null>;
+}
