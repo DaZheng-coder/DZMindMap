@@ -31,8 +31,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
 
-  const { appendChildNode, appendSiblingNode, setSelectNodeId } =
-    useContext(MindMapContext)!;
+  const { appendChildNode, appendSiblingNode } = useContext(MindMapContext)!;
 
   const getPreInsertPos = (
     draggingOffset: XYCoord | null,
@@ -129,14 +128,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     }
   }, [isOver]);
 
-  const handleClickNode = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setSelectNodeId(node.id);
-    },
-    [node, setSelectNodeId]
-  );
-
   drag(nodeRef);
   drop(blockRef);
 
@@ -149,7 +140,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     >
       <div
         className={`tw-relative tw-flex hover:tw-cursor-pointer tw-items-center `}
-        onClick={handleClickNode}
       >
         <MindMapNode
           ref={nodeRef}

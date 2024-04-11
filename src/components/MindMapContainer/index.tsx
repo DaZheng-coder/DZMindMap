@@ -96,7 +96,7 @@ const MindMapContainer: FC = () => {
         <div
           id={MIND_MAP_CONTAINER_ID}
           ref={mindMapWrapRef}
-          className="tw-relative tw-inline-block tw-m-auto "
+          className="tw-relative tw-inline-block tw-m-auto tw-p-[100px]"
         >
           <SvgContainer
             previewLineCoord={previewLineCoord}

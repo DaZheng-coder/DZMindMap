@@ -1,4 +1,10 @@
-import { FC, ReactNode, forwardRef, useContext, useState } from "react";
+import {
+  FC,
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useContext,
+} from "react";
 import { TPreviewVisible } from "../../types";
 import PreviewNode from "../PreviewNode";
 import { NODE_MARGIN_X, NODE_MARGIN_Y } from "../../constants";
@@ -18,7 +24,15 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
   HTMLDivElement,
   IMindMapNodeProps
 >(({ id, label, previewVisible }, ref) => {
-  const { selectNodeId } = useContext(MindMapContext)!;
+  const { selectNodeId, setSelectNodeId } = useContext(MindMapContext)!;
+
+  const handleClickNode = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectNodeId(id);
+    },
+    [id, setSelectNodeId]
+  );
 
   return (
     <div
@@ -29,6 +43,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       className={`${
         selectNodeId === id ? selectedCls : unSelectedCls
       } tw-relative tw-py-[6px] tw-px-[10px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
+      onClick={handleClickNode}
     >
       {previewVisible === "top" && (
         <PreviewNode style={{ top: "-100%", left: 0 }} />
