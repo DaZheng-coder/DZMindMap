@@ -1,13 +1,12 @@
-import { FC, ReactNode, forwardRef, useState } from "react";
+import { FC, ReactNode, forwardRef, useContext, useState } from "react";
 import { TPreviewVisible } from "../../types";
 import PreviewNode from "../PreviewNode";
 import { NODE_MARGIN_X, NODE_MARGIN_Y } from "../../constants";
-import NodeInput from "../NodeInput";
+import { MindMapContext } from "../../contexts/MindMapProvider";
 
 interface IMindMapNodeProps {
   id: string;
   label: ReactNode;
-  selectNodeId: string;
   previewVisible: TPreviewVisible;
   editNode: (nodeId: string, value: string) => void;
 }
@@ -18,18 +17,8 @@ const unSelectedCls = "tw-border-[3px] tw-border-solid tw-border-[white]";
 const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
   HTMLDivElement,
   IMindMapNodeProps
->(({ id, label, selectNodeId, previewVisible, editNode }, ref) => {
-  const [editing, setEditing] = useState<boolean>(false);
-
-  const handleDoubleClick = () => {
-    setEditing(true);
-  };
-
-  const handleInputEnter = (value: string) => {
-    console.log("*** value", value);
-    editNode(id, value);
-    setEditing(false);
-  };
+>(({ id, label, previewVisible }, ref) => {
+  const { selectNodeId } = useContext(MindMapContext)!;
 
   return (
     <div
@@ -44,11 +33,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       {previewVisible === "top" && (
         <PreviewNode style={{ top: "-100%", left: 0 }} />
       )}
-      {editing ? (
-        <NodeInput label={label} onSubmit={handleInputEnter} />
-      ) : (
-        <span onDoubleClick={handleDoubleClick}>{label}</span>
-      )}
+      <span>{label}</span>
       {previewVisible === "bottom" && (
         <PreviewNode style={{ bottom: "-100%", left: 0 }} />
       )}

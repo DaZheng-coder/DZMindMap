@@ -1,6 +1,14 @@
-import React, { FC, ReactNode, createContext, useState } from "react";
+import React, {
+  FC,
+  ReactNode,
+  createContext,
+  useCallback,
+  useState,
+} from "react";
 
 import { INode } from "../types";
+import { cloneDeep } from "lodash";
+import { findNodesByIds, getNewNode } from "../helper";
 
 interface IMindMapProviderProps {
   initData: INode;
@@ -8,18 +16,115 @@ interface IMindMapProviderProps {
 }
 
 export const MindMapContext = createContext<{
-  mindMapData: INode;
-  setMindMapData: (data: INode) => void;
   selectNodeId: string | undefined;
+  mindMapData: INode;
+  appendChildNode: (
+    selectNodeId: string | undefined,
+    appendingNodeId?: string
+  ) => void;
+  appendSiblingNode: (
+    selectNodeId: string | undefined,
+    insert: "before" | "after",
+    appendingNodeId?: string
+  ) => void;
+  removeNode: (selectNodeId: string | undefined) => void;
+  editNode: (nodeId: string, value: string) => void;
   setSelectNodeId: (nodeId: string | undefined) => void;
 } | null>(null);
 
 const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
   const [mindMapData, setMindMapData] = useState<INode>(initData);
   const [selectNodeId, setSelectNodeId] = useState<string>();
+
+  const appendChildNode = useCallback(
+    (selectNodeId: string | undefined, appendingNodeId?: string) => {
+      if (!selectNodeId || selectNodeId === appendingNodeId) return;
+      setMindMapData((data) => {
+        const newData = cloneDeep(data);
+        const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
+        let appendingNode: INode;
+        if (appendingNodeId) {
+          appendingNode = res[1].node;
+          res[1].parentNode.children.splice(res[1].index, 1);
+        } else {
+          appendingNode = getNewNode();
+        }
+        res[0].node.children.push(appendingNode);
+        setSelectNodeId(appendingNode.id);
+        return newData;
+      });
+    },
+    []
+  );
+
+  const appendSiblingNode = useCallback(
+    (
+      selectNodeId: string | undefined,
+      insert: "before" | "after",
+      appendingNodeId?: string
+    ) => {
+      if (!selectNodeId || selectNodeId === appendingNodeId) return;
+      setMindMapData((data) => {
+        const newData = cloneDeep(data);
+        const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
+        const selectNode = res[0];
+        const appendingNode: INode = appendingNodeId
+          ? res[1].node
+          : getNewNode();
+
+        const insertIndex =
+          insert === "before" ? selectNode.index : selectNode.index + 1;
+        selectNode.parentNode.children.splice(insertIndex, 0, appendingNode);
+
+        if (appendingNodeId) {
+          const appendingNode = res[1];
+          const isSameParent =
+            appendingNode.parentNode.id === selectNode.parentNode.id;
+          const deleteIndex =
+            isSameParent && appendingNode.index > selectNode.index
+              ? appendingNode.index + 1
+              : appendingNode.index;
+          res[1].parentNode.children.splice(deleteIndex, 1);
+        }
+
+        setSelectNodeId(appendingNode.id);
+        return newData;
+      });
+    },
+    []
+  );
+
+  const removeNode = useCallback((selectNodeId: string | undefined) => {
+    if (!selectNodeId) return;
+    setMindMapData((data) => {
+      const newData = cloneDeep(data);
+      const res = findNodesByIds(newData, [selectNodeId]);
+      res[0].parentNode.children.splice(res[0].index, 1);
+      setSelectNodeId(res[0].parentNode.id);
+      return newData;
+    });
+  }, []);
+
+  const editNode = useCallback((nodeId: string, value: string) => {
+    setMindMapData((data) => {
+      const newData = cloneDeep(data);
+      const res = findNodesByIds(newData, [nodeId]);
+      res[0].node.label = value;
+      return newData;
+    });
+  }, []);
+
   return (
     <MindMapContext.Provider
-      value={{ mindMapData, setMindMapData, selectNodeId, setSelectNodeId }}
+      value={{
+        mindMapData,
+        appendChildNode,
+        appendSiblingNode,
+        removeNode,
+        editNode,
+        selectNodeId,
+        setSelectNodeId,
+      }}
     >
       {children}
     </MindMapContext.Provider>

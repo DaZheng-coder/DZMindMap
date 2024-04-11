@@ -1,44 +1,38 @@
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import MindMapNode from "../MindMapNode";
 import { IDraggingItem, INode, TPreviewVisible } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import PreviewNode from "../PreviewNode";
 import { NODE_MARGIN_Y } from "../../constants";
+import { MindMapContext } from "../../contexts/MindMapProvider";
 
 interface IMindMapBlockProps {
   node: INode;
   parentNodeId?: string;
-  selectNodeId: string | undefined;
-  setSelectNodeId: (nodeId: string) => void;
   isRoot?: boolean;
-  appendChildNode: (
-    selectNodeId: string | undefined,
-    appendingNodeId?: string | undefined
-  ) => void;
-  appendSiblingNode: (
-    selectNodeId: string | undefined,
-    insert: "after" | "before",
-    appendingNodeId?: string | undefined
-  ) => void;
   drawLine: (startNodeId?: string) => void;
-  editNode: (nodeId: string, value: string) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
   node,
   parentNodeId,
-  selectNodeId,
-  setSelectNodeId,
   isRoot = false,
-  appendChildNode,
-  appendSiblingNode,
-  editNode,
   drawLine,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
+
+  const { appendChildNode, appendSiblingNode, setSelectNodeId } =
+    useContext(MindMapContext)!;
 
   const getPreInsertPos = (
     draggingOffset: XYCoord | null,
@@ -160,11 +154,9 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
         <MindMapNode
           ref={nodeRef}
           key={node.id}
-          selectNodeId={selectNodeId || ""}
           id={node.id}
           label={node.label}
           previewVisible={previewVisible}
-          editNode={editNode}
         />
       </div>
       <div className="tw-flex tw-flex-col tw-relative">
@@ -173,12 +165,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             key={child.id}
             node={child}
             parentNodeId={node.id}
-            selectNodeId={selectNodeId}
-            setSelectNodeId={setSelectNodeId}
-            appendChildNode={appendChildNode}
-            appendSiblingNode={appendSiblingNode}
             drawLine={drawLine}
-            editNode={editNode}
           />
         ))}
         {previewVisible === "lastChild" && (
