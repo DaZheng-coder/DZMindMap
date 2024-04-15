@@ -1,10 +1,4 @@
-import {
-  FC,
-  ReactNode,
-  forwardRef,
-  useCallback,
-  useContext,
-} from "react";
+import { FC, ReactNode, forwardRef, useCallback, useContext } from "react";
 import { TPreviewVisible } from "../../types";
 import PreviewNode from "../PreviewNode";
 import { NODE_MARGIN_X, NODE_MARGIN_Y } from "../../constants";
@@ -45,13 +39,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       } tw-relative tw-py-[6px] tw-px-[10px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
       onClick={handleClickNode}
     >
-      {previewVisible === "top" && (
-        <PreviewNode style={{ top: "-100%", left: 0 }} />
-      )}
       <span>{label}</span>
-      {previewVisible === "bottom" && (
-        <PreviewNode style={{ bottom: "-100%", left: 0 }} />
-      )}
     </div>
   );
 });

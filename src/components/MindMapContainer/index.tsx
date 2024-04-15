@@ -15,8 +15,9 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CustomDragLayer } from "../CustomDragLayer";
 import usePreviewLine from "../../hooks/usePreviewLine";
-import { MIND_MAP_CONTAINER_ID } from "../../constants";
+import { MIND_MAP_CONTAINER_ID, SCROLL_CONTAINER } from "../../constants";
 import { MindMapContext } from "../../contexts/MindMapProvider";
+import PreviewNode from "../PreviewNode";
 
 const MindMapContainer: FC = () => {
   const [lineCoords, setLineCoords] = useState<ILineCoord[]>([]);
@@ -104,6 +105,7 @@ const MindMapContainer: FC = () => {
           />
           <MindMapBlock node={mindMapData} isRoot drawLine={drawLine} />
           <CustomDragLayer />
+          <PreviewNode />
         </div>
       </DndProvider>
     </div>

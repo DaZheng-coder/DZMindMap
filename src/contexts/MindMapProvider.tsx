@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 
-import { INode } from "../types";
+import { , INode, IPreviewNodeData } from "../types";
 import { cloneDeep } from "lodash";
 import { findNodesByIds, getNewNode } from "../helper";
 
@@ -30,11 +30,14 @@ export const MindMapContext = createContext<{
   removeNode: (selectNodeId: string | undefined) => void;
   editNode: (nodeId: string, value: string) => void;
   setSelectNodeId: (nodeId: string | undefined) => void;
+  previewNodeData: IPreviewNodeData | undefined;
+  setPreviewNodeData: (data: IPreviewNodeData) => void;
 } | null>(null);
 
 const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
   const [mindMapData, setMindMapData] = useState<INode>(initData);
   const [selectNodeId, setSelectNodeId] = useState<string>();
+  const [previewNodeData, setPreviewNodeData] = useState<IPreviewNodeData>();
 
   const appendChildNode = useCallback(
     (selectNodeId: string | undefined, appendingNodeId?: string) => {
@@ -124,6 +127,8 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
         editNode,
         selectNodeId,
         setSelectNodeId,
+        previewNodeData,
+        setPreviewNodeData,
       }}
     >
       {children}

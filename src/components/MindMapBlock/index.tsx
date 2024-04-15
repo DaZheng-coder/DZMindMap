@@ -1,22 +1,20 @@
-import {
-  FC,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FC, useContext, useEffect, useRef, useState } from "react";
 import MindMapNode from "../MindMapNode";
-import { IDraggingItem, INode, TPreviewVisible } from "../../types";
+import { ICoord, IDraggingItem, INode, TPreviewVisible } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
-import PreviewNode from "../PreviewNode";
-import { NODE_MARGIN_Y } from "../../constants";
 import { MindMapContext } from "../../contexts/MindMapProvider";
+import {
+  MIND_MAP_CONTAINER_ID,
+  NODE_MARGIN_X,
+  NODE_MARGIN_Y,
+} from "../../constants";
 
 interface IMindMapBlockProps {
   node: INode;
   parentNodeId?: string;
+  prevNodeId?: string;
+  nextNodeId?: string;
   isRoot?: boolean;
   drawLine: (startNodeId?: string) => void;
 }
@@ -24,6 +22,8 @@ interface IMindMapBlockProps {
 const MindMapBlock: FC<IMindMapBlockProps> = ({
   node,
   parentNodeId,
+  prevNodeId,
+  nextNodeId,
   isRoot = false,
   drawLine,
 }) => {
@@ -31,15 +31,18 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
 
-  const { appendChildNode, appendSiblingNode } = useContext(MindMapContext)!;
+  const { appendChildNode, appendSiblingNode, setPreviewNodeData } =
+    useContext(MindMapContext)!;
 
   const getPreInsertPos = (
     draggingOffset: XYCoord | null,
-    isRoot: boolean = false
+    isRoot: boolean = false,
+    nodeRect?: DOMRect
   ) => {
-    const rect = document.getElementById(node.id)?.getBoundingClientRect();
+    const rect =
+      nodeRect || document.getElementById(node.id)?.getBoundingClientRect();
     if (rect && draggingOffset) {
-      const centerX = (rect.width / 3) * 2 + rect.left;
+      const centerX = (rect.width / 4) * 3 + rect.left;
       const centerY = rect.height / 2 + rect.top;
       if (draggingOffset.x <= centerX) {
         if (isRoot) {
@@ -73,50 +76,145 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     canDrag: () => !isRoot,
   }));
 
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: "MindMap",
-    collect: (monitor: DropTargetMonitor<IDraggingItem>) => {
-      const draggingNode = monitor.getItem()?.draggingNode;
-      return {
-        isOver:
-          draggingNode?.id === node.id
-            ? undefined
-            : monitor.isOver({ shallow: true }),
-      };
-    },
-    hover: (item, monitor) => {
-      const isOver = monitor.isOver({ shallow: true });
-      const draggingNode = item.draggingNode;
-      if (
-        node.children.length === 1 &&
-        node.children[0].id === draggingNode.id
-      ) {
-        return;
-      }
-      if (isOver && draggingNode.id !== node.id) {
-        const draggingOffset = monitor.getClientOffset();
-        const pos = getPreInsertPos(draggingOffset, isRoot);
-        drawLine(pos === "lastChild" ? node.id : parentNodeId || "");
-        setPreviewVisible(pos);
-      }
-    },
-    drop: (item, monitor) => {
-      const draggingNode = item.draggingNode;
-      const isOver = monitor.isOver({ shallow: true });
-      if (isOver) {
-        const pos = getPreInsertPos(monitor.getClientOffset(), isRoot);
-        if (pos === "lastChild") {
-          appendChildNode(node.id, draggingNode.id);
-        } else {
-          appendSiblingNode(
-            node.id,
-            pos === "top" ? "before" : "after",
-            draggingNode.id
+  const [{ isOver }, drop] = useDrop(
+    () => ({
+      accept: "MindMap",
+      collect: (monitor: DropTargetMonitor<IDraggingItem>) => {
+        const draggingNode = monitor.getItem()?.draggingNode;
+        return {
+          isOver:
+            draggingNode?.id === node.id
+              ? undefined
+              : monitor.isOver({ shallow: true }),
+        };
+      },
+      hover: (item, monitor) => {
+        const isOver = monitor.isOver({ shallow: true });
+        if (isOver) {
+          const originRect = document
+            .getElementById(MIND_MAP_CONTAINER_ID)
+            ?.getBoundingClientRect();
+          const selectNodeRect = document
+            .getElementById(node.id)
+            ?.getBoundingClientRect();
+          const pos = getPreInsertPos(
+            monitor.getClientOffset(),
+            isRoot,
+            selectNodeRect
           );
+          const originCoord: ICoord = {
+            x: originRect?.left || 0,
+            y: originRect?.top || 0,
+          };
+          if (!selectNodeRect) return;
+          if (pos === "lastChild") {
+            const start = {
+              x: selectNodeRect.right - originCoord.x,
+              y:
+                selectNodeRect.bottom -
+                originCoord.y -
+                selectNodeRect.height / 2,
+            };
+            const end = {
+              x: start.x + NODE_MARGIN_X * 2,
+              y: node.children.length
+                ? start.y + selectNodeRect.height
+                : start.y,
+            };
+            setPreviewNodeData({
+              visible: true,
+              lineCoord: { start, end },
+            });
+          } else {
+            if (!parentNodeId) return;
+            const parentNodeRect = document
+              .getElementById(parentNodeId)
+              ?.getBoundingClientRect();
+            if (!parentNodeRect) return;
+            const start = {
+              x: parentNodeRect.right - originCoord.x,
+              y:
+                parentNodeRect.bottom -
+                originCoord.y -
+                parentNodeRect.height / 2,
+            };
+            if (pos === "top") {
+              if (prevNodeId) {
+                const prevNodeRect = document
+                  .getElementById(prevNodeId)
+                  ?.getBoundingClientRect();
+                if (!prevNodeRect) return;
+                const end = {
+                  x: selectNodeRect.left - originCoord.x,
+                  y:
+                    (selectNodeRect.top - prevNodeRect.bottom) / 2 +
+                    prevNodeRect.bottom -
+                    originCoord.y,
+                };
+                setPreviewNodeData({
+                  visible: true,
+                  lineCoord: { start, end },
+                });
+              } else {
+                const end = {
+                  x: selectNodeRect.left - originCoord.x,
+                  y: selectNodeRect.top - NODE_MARGIN_Y - originCoord.y,
+                };
+                setPreviewNodeData({
+                  visible: true,
+                  lineCoord: { start, end },
+                });
+              }
+            } else {
+              if (nextNodeId) {
+                const nextNodeRect = document
+                  .getElementById(nextNodeId)
+                  ?.getBoundingClientRect();
+                if (!nextNodeRect) return;
+                const end = {
+                  x: selectNodeRect.left - originCoord.x,
+                  y:
+                    (nextNodeRect.top - selectNodeRect.bottom) / 2 +
+                    selectNodeRect.bottom -
+                    originCoord.y,
+                };
+                setPreviewNodeData({
+                  visible: true,
+                  lineCoord: { start, end },
+                });
+              } else {
+                const end = {
+                  x: selectNodeRect.left - originCoord.x,
+                  y: selectNodeRect.bottom + NODE_MARGIN_Y - originCoord.y,
+                };
+                setPreviewNodeData({
+                  visible: true,
+                  lineCoord: { start, end },
+                });
+              }
+            }
+          }
         }
-      }
-    },
-  }));
+      },
+      drop: (item, monitor) => {
+        const draggingNode = item.draggingNode;
+        const isOver = monitor.isOver({ shallow: true });
+        if (isOver) {
+          const pos = getPreInsertPos(monitor.getClientOffset(), isRoot);
+          if (pos === "lastChild") {
+            appendChildNode(node.id, draggingNode.id);
+          } else {
+            appendSiblingNode(
+              node.id,
+              pos === "top" ? "before" : "after",
+              draggingNode.id
+            );
+          }
+        }
+      },
+    }),
+    [prevNodeId, nextNodeId]
+  );
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
@@ -150,24 +248,16 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
         />
       </div>
       <div className="tw-flex tw-flex-col tw-relative">
-        {(node.children || []).map((child) => (
+        {(node.children || []).map((child, index) => (
           <MindMapBlock
             key={child.id}
             node={child}
             parentNodeId={node.id}
+            prevNodeId={node.children[index - 1]?.id}
+            nextNodeId={node.children[index + 1]?.id}
             drawLine={drawLine}
           />
         ))}
-        {previewVisible === "lastChild" && (
-          <PreviewNode
-            style={{
-              top: node.children.length
-                ? `calc(100% - ${Math.floor(NODE_MARGIN_Y / 2) + 3}px)`
-                : "calc(50% - 14px)",
-              left: "33px",
-            }}
-          />
-        )}
       </div>
     </div>
   );

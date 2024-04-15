@@ -1,19 +1,29 @@
-import { CSSProperties, FC } from "react";
-import { PREVIEW_NODE_ID } from "../../constants";
+import { FC, useContext } from "react";
+import {
+  PREVIEW_NODE_HEIGHT,
+  PREVIEW_NODE_ID,
+  PREVIEW_NODE_WIDTH,
+} from "../../constants";
+import { MindMapContext } from "../../contexts/MindMapProvider";
 
-interface IPreviewNodeProps {
-  style: CSSProperties;
-}
+interface IPreviewNodeProps {}
 
-const PreviewNode: FC<IPreviewNodeProps> = ({ style = {} }) => {
+const PreviewNode: FC<IPreviewNodeProps> = () => {
+  const { previewNodeData } = useContext(MindMapContext)!;
+
   return (
     <div
       id={PREVIEW_NODE_ID}
-      style={style}
+      style={{
+        width: PREVIEW_NODE_WIDTH + "px",
+        height: PREVIEW_NODE_HEIGHT + "px",
+        display: previewNodeData?.visible ? "block" : "none",
+        top: previewNodeData?.lineCoord?.end.y,
+        left: previewNodeData?.lineCoord?.end.x,
+        transform: "translateY(-50%)",
+      }}
       className="tw-absolute tw-text-[#222] tw-bg-[skyblue] tw-p-[2px] tw-rounded-[4px]"
-    >
-      preview
-    </div>
+    />
   );
 };
 

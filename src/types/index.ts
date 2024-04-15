@@ -23,3 +23,9 @@ export interface IDraggingItem {
   draggingNode: INode;
   draggingDomRef: React.MutableRefObject<HTMLDivElement | null>;
 }
+
+export interface IPreviewNodeData {
+  visible: boolean;
+  lineCoord?: ILineCoord;
+  transform?: string;
+}
