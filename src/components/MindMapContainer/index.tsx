@@ -14,8 +14,7 @@ import useDragCanvas from "../../hooks/useScroll";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CustomDragLayer } from "../CustomDragLayer";
-import usePreviewLine from "../../hooks/usePreviewLine";
-import { MIND_MAP_CONTAINER_ID, SCROLL_CONTAINER } from "../../constants";
+import { MIND_MAP_CONTAINER_ID } from "../../constants";
 import { MindMapContext } from "../../contexts/MindMapProvider";
 import PreviewNode from "../PreviewNode";
 
@@ -31,6 +30,7 @@ const MindMapContainer: FC = () => {
     appendChildNode,
     appendSiblingNode,
     removeNode,
+    previewNodeData,
   } = useContext(MindMapContext)!;
 
   const {
@@ -40,8 +40,6 @@ const MindMapContainer: FC = () => {
     handleMouseMove,
     handleMouseUp,
   } = useDragCanvas();
-
-  const { lineCoord: previewLineCoord, drawLine } = usePreviewLine();
 
   useLayoutEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -100,10 +98,10 @@ const MindMapContainer: FC = () => {
           className="tw-relative tw-inline-block tw-m-auto tw-p-[100px]"
         >
           <SvgContainer
-            previewLineCoord={previewLineCoord}
+            previewLineCoord={previewNodeData?.lineCoord}
             lineCoords={lineCoords}
           />
-          <MindMapBlock node={mindMapData} isRoot drawLine={drawLine} />
+          <MindMapBlock node={mindMapData} isRoot />
           <CustomDragLayer />
           <PreviewNode />
         </div>

@@ -17,7 +17,6 @@ interface IMindMapBlockProps {
   prevNodeId?: string;
   nextNodeId?: string;
   isRoot?: boolean;
-  drawLine: (startNodeId?: string) => void;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
@@ -26,7 +25,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   prevNodeId,
   nextNodeId,
   isRoot = false,
-  drawLine,
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -59,8 +57,8 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     }
   };
 
-  const handleLeave = () => {
-    drawLine();
+  const handleNotHover = () => {
+    setPreviewNodeData({ visible: false });
     setPreviewVisible(false);
   };
 
@@ -196,7 +194,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   useEffect(() => {
     if (!isOver) {
-      handleLeave();
+      handleNotHover();
     }
   }, [isOver]);
 
@@ -229,7 +227,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             parentNodeId={node.id}
             prevNodeId={node.children[index - 1]?.id}
             nextNodeId={node.children[index + 1]?.id}
-            drawLine={drawLine}
           />
         ))}
       </div>
