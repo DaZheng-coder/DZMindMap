@@ -9,6 +9,7 @@ import {
   NODE_MARGIN_X,
   NODE_MARGIN_Y,
 } from "../../constants";
+import { getRect } from "../../utils";
 
 interface IMindMapBlockProps {
   node: INode;
@@ -63,6 +64,13 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
     setPreviewVisible(false);
   };
 
+  const setPreviewData = (start: ICoord, end: ICoord) => {
+    setPreviewNodeData({
+      visible: true,
+      lineCoord: { start, end },
+    });
+  };
+
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
     item: {
@@ -90,109 +98,75 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       },
       hover: (item, monitor) => {
         const isOver = monitor.isOver({ shallow: true });
-        if (isOver) {
-          const originRect = document
-            .getElementById(MIND_MAP_CONTAINER_ID)
-            ?.getBoundingClientRect();
-          const selectNodeRect = document
-            .getElementById(node.id)
-            ?.getBoundingClientRect();
-          const pos = getPreInsertPos(
-            monitor.getClientOffset(),
-            isRoot,
-            selectNodeRect
-          );
-          const originCoord: ICoord = {
-            x: originRect?.left || 0,
-            y: originRect?.top || 0,
+        if (!isOver) return;
+        const originRect = getRect(MIND_MAP_CONTAINER_ID);
+        const selectNodeRect = getRect(node.id);
+        if (!selectNodeRect) return;
+
+        const pos = getPreInsertPos(
+          monitor.getClientOffset(),
+          isRoot,
+          selectNodeRect
+        );
+        const originCoord: ICoord = {
+          x: originRect?.left || 0,
+          y: originRect?.top || 0,
+        };
+
+        if (pos === "lastChild") {
+          const start = {
+            x: selectNodeRect.right - originCoord.x,
+            y:
+              selectNodeRect.bottom - originCoord.y - selectNodeRect.height / 2,
           };
-          if (!selectNodeRect) return;
-          if (pos === "lastChild") {
-            const start = {
-              x: selectNodeRect.right - originCoord.x,
-              y:
-                selectNodeRect.bottom -
-                originCoord.y -
-                selectNodeRect.height / 2,
-            };
-            const end = {
-              x: start.x + NODE_MARGIN_X * 2,
-              y: node.children.length
-                ? start.y + selectNodeRect.height
-                : start.y,
-            };
-            setPreviewNodeData({
-              visible: true,
-              lineCoord: { start, end },
-            });
-          } else {
-            if (!parentNodeId) return;
-            const parentNodeRect = document
-              .getElementById(parentNodeId)
-              ?.getBoundingClientRect();
-            if (!parentNodeRect) return;
-            const start = {
-              x: parentNodeRect.right - originCoord.x,
-              y:
-                parentNodeRect.bottom -
-                originCoord.y -
-                parentNodeRect.height / 2,
-            };
-            if (pos === "top") {
-              if (prevNodeId) {
-                const prevNodeRect = document
-                  .getElementById(prevNodeId)
-                  ?.getBoundingClientRect();
-                if (!prevNodeRect) return;
-                const end = {
+          const end = {
+            x: start.x + NODE_MARGIN_X * 2,
+            y: node.children.length ? start.y + selectNodeRect.height : start.y,
+          };
+          setPreviewData(start, end);
+        } else {
+          const parentNodeRect = getRect(parentNodeId);
+          if (!parentNodeRect) return;
+
+          const start = {
+            x: parentNodeRect.right - originCoord.x,
+            y:
+              parentNodeRect.bottom - originCoord.y - parentNodeRect.height / 2,
+          };
+          if (pos === "top") {
+            const prevNodeRect = getRect(prevNodeId);
+
+            const end = prevNodeId
+              ? {
                   x: selectNodeRect.left - originCoord.x,
-                  y:
-                    (selectNodeRect.top - prevNodeRect.bottom) / 2 +
-                    prevNodeRect.bottom -
-                    originCoord.y,
-                };
-                setPreviewNodeData({
-                  visible: true,
-                  lineCoord: { start, end },
-                });
-              } else {
-                const end = {
+                  y: prevNodeRect
+                    ? (selectNodeRect.top - prevNodeRect.bottom) / 2 +
+                      prevNodeRect.bottom -
+                      originCoord.y
+                    : 0,
+                }
+              : {
                   x: selectNodeRect.left - originCoord.x,
                   y: selectNodeRect.top - NODE_MARGIN_Y - originCoord.y,
                 };
-                setPreviewNodeData({
-                  visible: true,
-                  lineCoord: { start, end },
-                });
-              }
-            } else {
-              if (nextNodeId) {
-                const nextNodeRect = document
-                  .getElementById(nextNodeId)
-                  ?.getBoundingClientRect();
-                if (!nextNodeRect) return;
-                const end = {
+            setPreviewData(start, end);
+          } else {
+            const nextNodeRect = getRect(nextNodeId);
+
+            const end = nextNodeId
+              ? {
                   x: selectNodeRect.left - originCoord.x,
-                  y:
-                    (nextNodeRect.top - selectNodeRect.bottom) / 2 +
-                    selectNodeRect.bottom -
-                    originCoord.y,
-                };
-                setPreviewNodeData({
-                  visible: true,
-                  lineCoord: { start, end },
-                });
-              } else {
-                const end = {
+                  y: nextNodeRect
+                    ? (nextNodeRect.top - selectNodeRect.bottom) / 2 +
+                      selectNodeRect.bottom -
+                      originCoord.y
+                    : 0,
+                }
+              : {
                   x: selectNodeRect.left - originCoord.x,
                   y: selectNodeRect.bottom + NODE_MARGIN_Y - originCoord.y,
                 };
-                setPreviewNodeData({
-                  visible: true,
-                  lineCoord: { start, end },
-                });
-              }
-            }
+            setPreviewData(start, end);
           }
         }
       },

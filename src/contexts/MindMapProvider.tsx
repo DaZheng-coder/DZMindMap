@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 
-import { , INode, IPreviewNodeData } from "../types";
+import { INode, IPreviewNodeData } from "../types";
 import { cloneDeep } from "lodash";
 import { findNodesByIds, getNewNode } from "../helper";
 
