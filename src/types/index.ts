@@ -4,6 +4,7 @@ export interface INode {
   id: string;
   label: ReactNode;
   children: INode[];
+  shrink?: boolean; // 收缩子节点
 }
 
 export interface ICoord {
@@ -16,8 +17,6 @@ export interface ILineCoord {
   end: ICoord;
   turn?: "start" | "end";
 }
-
-export type TPreviewVisible = false | "top" | "bottom" | "lastChild";
 
 export interface IDraggingItem {
   draggingNode: INode;

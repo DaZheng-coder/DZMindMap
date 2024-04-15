@@ -1,6 +1,6 @@
-import { FC, useContext, useEffect, useRef, useState } from "react";
+import { FC, useContext, useEffect, useRef } from "react";
 import MindMapNode from "../MindMapNode";
-import { ICoord, IDraggingItem, INode, TPreviewVisible } from "../../types";
+import { ICoord, IDraggingItem, INode } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { MindMapContext } from "../../contexts/MindMapProvider";
@@ -28,7 +28,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
-  const [previewVisible, setPreviewVisible] = useState<TPreviewVisible>(false);
 
   const { appendChildNode, appendSiblingNode, setPreviewNodeData } =
     useContext(MindMapContext)!;
@@ -59,7 +58,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   const handleNotHover = () => {
     setPreviewNodeData({ visible: false });
-    setPreviewVisible(false);
   };
 
   const setPreviewData = (start: ICoord, end: ICoord) => {
@@ -216,10 +214,12 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           key={node.id}
           id={node.id}
           label={node.label}
-          previewVisible={previewVisible}
         />
       </div>
-      <div className="tw-flex tw-flex-col tw-relative">
+      <div
+        style={{ display: node.shrink ? "none" : "flex" }}
+        className="tw-flex tw-flex-col tw-relative"
+      >
         {(node.children || []).map((child, index) => (
           <MindMapBlock
             key={child.id}
