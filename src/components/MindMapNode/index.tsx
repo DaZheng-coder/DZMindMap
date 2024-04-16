@@ -1,5 +1,6 @@
 import {
   FC,
+  MutableRefObject,
   ReactNode,
   forwardRef,
   useCallback,
@@ -29,7 +30,11 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
     useContext(MindMapContext)!;
   const [editing, setEditing] = useState<boolean>(false);
   const [canEdit, setCanEdit] = useState<boolean>(false);
-  const [editorSize, setEditorSize] = useState<{ w: number; h: number }>({
+  const [preEditorSize, setPreEditorSize] = useState<{ w: number; h: number }>({
+    w: 0,
+    h: 0,
+  });
+  const [preWrapSize, setPreWrapSize] = useState<{ w: number; h: number }>({
     w: 0,
     h: 0,
   });
@@ -50,17 +55,21 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
 
   const handleEdit = useCallback(() => {
     const rect = editorRef.current?.getBoundingClientRect();
-    if (rect) {
-      setEditorSize({ w: rect.width, h: rect.height });
+    const wrapRect = (
+      ref as MutableRefObject<HTMLDivElement | null>
+    ).current?.getBoundingClientRect();
+    if (rect && wrapRect) {
+      setPreEditorSize({ w: rect.width, h: rect.height });
+      setPreWrapSize({ w: wrapRect.width, h: wrapRect.height });
     }
     setCanEdit(true);
-  }, []);
+  }, [ref]);
 
   const handleBlur = useCallback(
     (e) => {
       if (editing) {
         updateNodeLabel(id, editorRef.current?.innerHTML);
-        setEditorSize({ w: 0, h: 0 });
+        setPreEditorSize({ w: 0, h: 0 });
       }
       setCanEdit(false);
       setEditing(false);
@@ -84,37 +93,45 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
 
   return (
     <div
-      id={id}
-      ref={ref}
-      style={{ margin: `${NODE_MARGIN_Y}px ${NODE_MARGIN_X}px` }}
-      onMouseDown={(e) => e.stopPropagation()}
-      className={`${
-        selectNodeId === id ? selectedCls : unSelectedCls
-      } tw-relative tw-py-[6px] tw-px-[14px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
-      onClick={handleClickNode}
+      style={{
+        margin: `${NODE_MARGIN_Y}px ${NODE_MARGIN_X}px`,
+        width: editing ? preWrapSize.w : "auto",
+        height: editing ? preWrapSize.h : "auto",
+      }}
     >
       <div
-        ref={editorRef}
-        onClick={handleEdit}
-        onBlur={handleBlur}
-        onMouseLeave={handleMouseLeave}
-        onDoubleClick={handleDbClick}
-        contentEditable={canEdit}
-        suppressContentEditableWarning
-        className="tw-whitespace-nowrap tw-outline-none tw-border-none"
-        onKeyDown={handleKeyDown}
-        style={{
-          minWidth: editorSize.w || "auto",
-          minHeight: editorSize.h || "auto",
-        }}
-        dangerouslySetInnerHTML={{ __html: label }}
-      />
-      <div
-        style={{ display: shrinkBtnVisible ? "flex" : "none" }}
-        onClick={handleClickShrink}
-        className="tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-right-0 tw-top-[50%] tw-translate-x-[50%] tw-translate-y-[-50%]"
+        id={id}
+        ref={ref}
+        style={editing ? { position: "absolute", zIndex: "999" } : {}}
+        onMouseDown={(e) => e.stopPropagation()}
+        className={`${
+          selectNodeId === id ? selectedCls : unSelectedCls
+        } tw-relative tw-py-[6px] tw-px-[14px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
+        onClick={handleClickNode}
       >
-        {shrink ? "+" : "-"}
+        <div
+          ref={editorRef}
+          style={{
+            minWidth: preEditorSize.w || "auto",
+            minHeight: preEditorSize.h || "auto",
+          }}
+          dangerouslySetInnerHTML={{ __html: label }}
+          contentEditable={canEdit}
+          suppressContentEditableWarning
+          onClick={handleEdit}
+          onBlur={handleBlur}
+          onMouseLeave={handleMouseLeave}
+          onDoubleClick={handleDbClick}
+          onKeyDown={handleKeyDown}
+          className="tw-whitespace-nowrap tw-outline-none tw-border-none"
+        />
+        <div
+          style={{ display: shrinkBtnVisible ? "flex" : "none" }}
+          onClick={handleClickShrink}
+          className="tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-right-0 tw-top-[50%] tw-translate-x-[50%] tw-translate-y-[-50%]"
+        >
+          {shrink ? "+" : "-"}
+        </div>
       </div>
     </div>
   );
