@@ -59,7 +59,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
   const handleBlur = useCallback(
     (e) => {
       if (editing) {
-        updateNodeLabel(id, e.target.textContent);
+        updateNodeLabel(id, editorRef.current?.innerHTML);
         setEditorSize({ w: 0, h: 0 });
       }
       setCanEdit(false);
@@ -101,15 +101,14 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
         onDoubleClick={handleDbClick}
         contentEditable={canEdit}
         suppressContentEditableWarning
-        className="tw-outline-none tw-border-none"
+        className="tw-whitespace-nowrap tw-outline-none tw-border-none"
         onKeyDown={handleKeyDown}
         style={{
           minWidth: editorSize.w || "auto",
           minHeight: editorSize.h || "auto",
         }}
-      >
-        {label}
-      </div>
+        dangerouslySetInnerHTML={{ __html: label }}
+      />
       <div
         style={{ display: shrinkBtnVisible ? "flex" : "none" }}
         onClick={handleClickShrink}

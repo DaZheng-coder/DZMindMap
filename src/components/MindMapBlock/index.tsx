@@ -220,7 +220,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       </div>
       <div
         style={{ display: node.shrink ? "none" : "flex" }}
-        className="tw-flex tw-flex-col tw-relative"
+        className="tw-flex tw-flex-col tw-relative tw-justify-center"
       >
         {(node.children || []).map((child, index) => (
           <MindMapBlock

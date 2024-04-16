@@ -60,7 +60,7 @@ export const getNewNode = () => {
   const id = nanoid();
   return {
     id,
-    label: id,
+    label: "未命名节点",
     children: [],
     shrink: false,
   };
