@@ -32,6 +32,7 @@ export const MindMapContext = createContext<{
   setSelectNodeId: (nodeId: string | undefined) => void;
   previewNodeData: IPreviewNodeData | undefined;
   setPreviewNodeData: (data: IPreviewNodeData) => void;
+  changeNodeShrink: (selectNodeId: string, shrink?: boolean) => void;
 } | null>(null);
 
 const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
@@ -117,6 +118,19 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
     });
   }, []);
 
+  const changeNodeShrink = useCallback(
+    (selectNodeId: string, shrink?: boolean) => {
+      setMindMapData((data) => {
+        const newData = cloneDeep(data);
+        const res = findNodesByIds(newData, [selectNodeId]);
+        res[0].node.shrink =
+          typeof shrink === "boolean" ? shrink : !res[0].node.shrink;
+        return newData;
+      });
+    },
+    []
+  );
+
   return (
     <MindMapContext.Provider
       value={{
@@ -129,6 +143,7 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
         setSelectNodeId,
         previewNodeData,
         setPreviewNodeData,
+        changeNodeShrink,
       }}
     >
       {children}

@@ -13,12 +13,14 @@ export const initLineCoords = (
   originCoord: ICoord,
   lineCoords: ILineCoord[] = []
 ): ICoord | undefined => {
-  const { id, children } = mindMapData;
+  const { id, children, shrink } = mindMapData;
   const startRect = document.getElementById(id)?.getBoundingClientRect();
   if (!startRect) return;
   const y = startRect.bottom - originCoord.y - startRect.height / 2;
   const startCoord = { x: startRect.right - originCoord.x, y };
   const endCoord = { x: startRect.left - originCoord.x, y };
+  const isShrink = typeof shrink === "boolean" && shrink;
+  if (isShrink) return endCoord;
   children?.forEach((child) => {
     const endCoord = initLineCoords(child, originCoord, lineCoords);
     if (endCoord) lineCoords.push({ start: startCoord, end: endCoord });

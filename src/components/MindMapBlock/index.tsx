@@ -214,6 +214,8 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           key={node.id}
           id={node.id}
           label={node.label}
+          shrink={node.shrink}
+          shrinkBtnVisible={!!node.children?.length}
         />
       </div>
       <div
