@@ -18,6 +18,7 @@ interface IMindMapProviderProps {
 export const MindMapContext = createContext<{
   selectNodeId: string | undefined;
   mindMapData: INode;
+  previewNodeData: IPreviewNodeData | undefined;
   appendChildNode: (
     selectNodeId: string | undefined,
     appendingNodeId?: string
@@ -30,9 +31,9 @@ export const MindMapContext = createContext<{
   removeNode: (selectNodeId: string | undefined) => void;
   editNode: (nodeId: string, value: string) => void;
   setSelectNodeId: (nodeId: string | undefined) => void;
-  previewNodeData: IPreviewNodeData | undefined;
   setPreviewNodeData: (data: IPreviewNodeData) => void;
   changeNodeShrink: (selectNodeId: string, shrink?: boolean) => void;
+  updateNodeLabel: (selectNodeId: string, newLabel: ReactNode) => void;
 } | null>(null);
 
 const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
@@ -131,6 +132,18 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
     []
   );
 
+  const updateNodeLabel = useCallback(
+    (selectNodeId: string, newLabel: ReactNode) => {
+      setMindMapData((data) => {
+        const newData = cloneDeep(data);
+        const res = findNodesByIds(newData, [selectNodeId]);
+        res[0].node.label = newLabel;
+        return newData;
+      });
+    },
+    []
+  );
+
   return (
     <MindMapContext.Provider
       value={{
@@ -144,6 +157,7 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
         previewNodeData,
         setPreviewNodeData,
         changeNodeShrink,
+        updateNodeLabel,
       }}
     >
       {children}
