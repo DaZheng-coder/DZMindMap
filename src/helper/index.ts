@@ -62,5 +62,6 @@ export const getNewNode = () => {
     id,
     label: id,
     children: [],
+    shrink: false,
   };
 };

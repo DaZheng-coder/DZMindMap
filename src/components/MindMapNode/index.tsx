@@ -1,7 +1,6 @@
 import { FC, ReactNode, forwardRef, useCallback, useContext } from "react";
 import { NODE_MARGIN_X, NODE_MARGIN_Y } from "../../constants";
 import { MindMapContext } from "../../contexts/MindMapProvider";
-import "./index.less";
 
 interface IMindMapNodeProps {
   id: string;
@@ -39,7 +38,7 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       ref={ref}
       style={{ margin: `${NODE_MARGIN_Y}px ${NODE_MARGIN_X}px` }}
       onMouseDown={(e) => e.stopPropagation()}
-      className={`mind_map_node ${
+      className={`${
         selectNodeId === id ? selectedCls : unSelectedCls
       } tw-relative tw-py-[6px] tw-px-[14px] tw-rounded-[6px] tw-bg-[#6d7175] tw-text-white`}
       onClick={handleClickNode}
@@ -48,12 +47,11 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
       <div
         style={{ display: shrinkBtnVisible ? "flex" : "none" }}
         onClick={handleClickShrink}
-        className="mind_map_node_shrink tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-right-0 tw-top-[50%] tw-translate-x-[50%] tw-translate-y-[-50%]"
+        className="tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-right-0 tw-top-[50%] tw-translate-x-[50%] tw-translate-y-[-50%]"
       >
         {shrink ? "+" : "-"}
       </div>
     </div>
   );
 });
-
 export default MindMapNode;
