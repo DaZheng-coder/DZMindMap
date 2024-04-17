@@ -1,10 +1,17 @@
 import { ReactNode } from "react";
 
+export type TDir = "right" | "left";
+
 export interface INode {
   id: string;
   label: ReactNode;
   children: INode[];
   shrink?: boolean; // 收缩子节点
+}
+
+export interface IRootNode extends INode {
+  reChildren: INode[];
+  reShrink?: boolean;
 }
 
 export interface ICoord {

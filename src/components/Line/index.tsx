@@ -13,7 +13,7 @@ const Line: FC<ILineProps> = ({ start, end, turn = "start" }) => {
   const _turn =
     turn === "start"
       ? `${start.x + 20},${start.y} ${start.x + 20},${end.y}`
-      : `${end.x - 20},${start.y} ${end.x - 20}, ${end.y}`;
+      : `${end.x + 20},${start.y} ${end.x + 20}, ${end.y}`;
 
   return (
     <polyline

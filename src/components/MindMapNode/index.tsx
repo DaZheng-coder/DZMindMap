@@ -10,6 +10,7 @@ import {
 } from "react";
 import { NODE_MARGIN_X, NODE_MARGIN_Y } from "../../constants";
 import { MindMapContext } from "../../contexts/MindMapProvider";
+import { TDir } from "../../types";
 
 interface IMindMapNodeProps {
   id: string;
@@ -17,6 +18,7 @@ interface IMindMapNodeProps {
   editNode: (nodeId: string, value: string) => void;
   shrink?: boolean;
   shrinkBtnVisible: boolean;
+  dir?: TDir;
 }
 
 const selectedCls = "tw-border-[3px] tw-border-solid tw-border-[#1456f0]";
@@ -25,7 +27,7 @@ const unSelectedCls = "tw-border-[3px] tw-border-solid tw-border-[white]";
 const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
   HTMLDivElement,
   IMindMapNodeProps
->(({ id, label, shrinkBtnVisible, shrink = false }, ref) => {
+>(({ id, label, shrinkBtnVisible, shrink = false, dir = "right" }, ref) => {
   const { selectNodeId, setSelectNodeId, changeNodeShrink, updateNodeLabel } =
     useContext(MindMapContext)!;
   const [editing, setEditing] = useState<boolean>(false);
@@ -128,7 +130,11 @@ const MindMapNode: FC<IMindMapNodeProps> = forwardRef<
         <div
           style={{ display: shrinkBtnVisible ? "flex" : "none" }}
           onClick={handleClickShrink}
-          className="tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-right-0 tw-top-[50%] tw-translate-x-[50%] tw-translate-y-[-50%]"
+          className={`${
+            dir === "right"
+              ? "tw-right-0 tw-translate-x-[50%]"
+              : "tw-left-0 tw-translate-x-[-50%]"
+          } tw-hidden tw-text-[22px] tw-leading-[16px] tw-w-[20px] tw-bg-[skyblue] tw-justify-center tw-h-[20px] tw-rounded-[50%] tw-absolute tw-top-[50%] tw-translate-y-[-50%]`}
         >
           {shrink ? "+" : "-"}
         </div>

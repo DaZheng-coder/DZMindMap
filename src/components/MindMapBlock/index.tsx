@@ -1,6 +1,6 @@
 import { FC, useContext, useEffect, useRef } from "react";
 import MindMapNode from "../MindMapNode";
-import { ICoord, IDraggingItem, INode } from "../../types";
+import { ICoord, IDraggingItem, INode, TDir } from "../../types";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { MindMapContext } from "../../contexts/MindMapProvider";
@@ -17,6 +17,7 @@ interface IMindMapBlockProps {
   prevNodeId?: string;
   nextNodeId?: string;
   isRoot?: boolean;
+  dir?: TDir;
 }
 
 const MindMapBlock: FC<IMindMapBlockProps> = ({
@@ -25,6 +26,7 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   prevNodeId,
   nextNodeId,
   isRoot = false,
+  dir = "right",
 }) => {
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -199,6 +201,22 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   drag(nodeRef);
   drop(blockRef);
 
+  const renderNode = (
+    <div
+      className={`tw-relative tw-flex hover:tw-cursor-pointer tw-items-center `}
+    >
+      <MindMapNode
+        ref={nodeRef}
+        key={node.id}
+        id={node.id}
+        label={node.label}
+        shrink={node.shrink}
+        shrinkBtnVisible={!!node.children?.length}
+        dir={dir}
+      />
+    </div>
+  );
+
   return (
     <div
       ref={blockRef}
@@ -206,21 +224,12 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
         isDragging ? "tw-opacity-60" : "tw-opacity-100"
       }`}
     >
-      <div
-        className={`tw-relative tw-flex hover:tw-cursor-pointer tw-items-center `}
-      >
-        <MindMapNode
-          ref={nodeRef}
-          key={node.id}
-          id={node.id}
-          label={node.label}
-          shrink={node.shrink}
-          shrinkBtnVisible={!!node.children?.length}
-        />
-      </div>
+      {dir === "right" && renderNode}
       <div
         style={{ display: node.shrink ? "none" : "flex" }}
-        className="tw-flex tw-flex-col tw-relative tw-justify-center"
+        className={`${
+          dir === "left" ? "tw-items-end" : ""
+        } tw-flex tw-flex-col tw-relative tw-justify-center`}
       >
         {(node.children || []).map((child, index) => (
           <MindMapBlock
@@ -229,9 +238,11 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
             parentNodeId={node.id}
             prevNodeId={node.children[index - 1]?.id}
             nextNodeId={node.children[index + 1]?.id}
+            dir={dir}
           />
         ))}
       </div>
+      {dir === "left" && renderNode}
     </div>
   );
 };

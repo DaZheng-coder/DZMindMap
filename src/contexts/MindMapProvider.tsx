@@ -6,18 +6,18 @@ import React, {
   useState,
 } from "react";
 
-import { INode, IPreviewNodeData } from "../types";
+import { INode, IPreviewNodeData, IRootNode } from "../types";
 import { cloneDeep } from "lodash";
 import { findNodesByIds, getNewNode } from "../helper";
 
 interface IMindMapProviderProps {
-  initData: INode;
+  initData: IRootNode;
   children: ReactNode;
 }
 
 export const MindMapContext = createContext<{
   selectNodeId: string | undefined;
-  mindMapData: INode;
+  mindMapData: IRootNode;
   previewNodeData: IPreviewNodeData | undefined;
   appendChildNode: (
     selectNodeId: string | undefined,
@@ -37,7 +37,7 @@ export const MindMapContext = createContext<{
 } | null>(null);
 
 const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
-  const [mindMapData, setMindMapData] = useState<INode>(initData);
+  const [mindMapData, setMindMapData] = useState<IRootNode>(initData);
   const [selectNodeId, setSelectNodeId] = useState<string>();
   const [previewNodeData, setPreviewNodeData] = useState<IPreviewNodeData>();
 
@@ -79,7 +79,15 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
 
         const insertIndex =
           insert === "before" ? selectNode.index : selectNode.index + 1;
-        selectNode.parentNode.children.splice(insertIndex, 0, appendingNode);
+        if (selectNode.isReChild) {
+          (selectNode.parentNode as IRootNode).reChildren.splice(
+            insertIndex,
+            0,
+            appendingNode
+          );
+        } else {
+          selectNode.parentNode.children.splice(insertIndex, 0, appendingNode);
+        }
 
         if (appendingNodeId) {
           const appendingNode = res[1];
@@ -89,7 +97,11 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
             isSameParent && appendingNode.index > selectNode.index
               ? appendingNode.index + 1
               : appendingNode.index;
-          res[1].parentNode.children.splice(deleteIndex, 1);
+          if (res[1].isReChild) {
+            (res[1].parentNode as IRootNode).reChildren.splice(deleteIndex, 1);
+          } else {
+            res[1].parentNode.children.splice(deleteIndex, 1);
+          }
         }
 
         setSelectNodeId(appendingNode.id);

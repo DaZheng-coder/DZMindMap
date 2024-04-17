@@ -101,7 +101,19 @@ const MindMapContainer: FC = () => {
             previewLineCoord={previewNodeData?.lineCoord}
             lineCoords={lineCoords}
           />
-          <MindMapBlock node={mindMapData} isRoot />
+          <div className="tw-flex">
+            <div className="tw-flex tw-flex-col tw-relative tw-justify-center tw-items-end">
+              {(mindMapData.reChildren || []).map((child) => (
+                <MindMapBlock
+                  key={child.id}
+                  node={child}
+                  parentNodeId={mindMapData.id}
+                  dir="left"
+                />
+              ))}
+            </div>
+            <MindMapBlock node={mindMapData} isRoot dir="right" />
+          </div>
           <CustomDragLayer />
           <PreviewNode />
         </div>
