@@ -4,7 +4,7 @@ import { IDraggingItem, INode, TDir } from "../../types";
 import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { MindMapContext } from "../../contexts/MindMapProvider";
-import { getPreviewData } from "../../helper";
+import { getPreviewData, getRootInsertPos } from "../../helper";
 
 interface IMindMapBlockProps {
   node: INode;
@@ -28,10 +28,6 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   const { appendChildNode, appendSiblingNode, setPreviewNodeData } =
     useContext(MindMapContext)!;
-
-  const handleNotHover = () => {
-    setPreviewNodeData({ visible: false });
-  };
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
@@ -78,20 +74,23 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
           });
       },
       drop: (item, monitor) => {
-        // const draggingNode = item.draggingNode;
-        // const isOver = monitor.isOver({ shallow: true });
-        // if (isOver) {
-        //   const pos = getRightPreInsertPos(monitor.getClientOffset(), isRoot);
-        //   if (pos === "insertChild") {
-        //     appendChildNode(node.id, draggingNode.id);
-        //   } else {
-        //     appendSiblingNode(
-        //       node.id,
-        //       pos === "top" ? "before" : "after",
-        //       draggingNode.id
-        //     );
-        //   }
-        // }
+        const draggingNode = item.draggingNode;
+        const isOver = monitor.isOver({ shallow: true });
+        if (isOver) {
+          if (isRoot) {
+            const pos = getRootInsertPos(node, monitor.getClientOffset());
+          }
+          // const pos = getRightPreInsertPos(monitor.getClientOffset(), isRoot);
+          // if (pos === "insertChild") {
+          //   appendChildNode(node.id, draggingNode.id);
+          // } else {
+          //   appendSiblingNode(
+          //     node.id,
+          //     pos === "top" ? "before" : "after",
+          //     draggingNode.id
+          //   );
+          // }
+        }
       },
     }),
     [prevNodeId, nextNodeId]
@@ -99,13 +98,13 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
+  }, [preview]);
 
   useEffect(() => {
     if (!isOver) {
-      handleNotHover();
+      setPreviewNodeData({ visible: false });
     }
-  }, [isOver]);
+  }, [isOver, setPreviewNodeData]);
 
   drag(nodeRef);
   drop(blockRef);

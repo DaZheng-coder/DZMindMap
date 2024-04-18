@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 
-import { INode, IPreviewNodeData, IRootNode } from "../types";
+import { INode, IPreviewNodeData, IRootNode, TDir } from "../types";
 import { cloneDeep } from "lodash";
 import { findNodesByIds, getNewNode } from "../helper";
 
@@ -23,6 +23,7 @@ export const MindMapContext = createContext<{
     selectNodeId: string | undefined,
     appendingNodeId?: string
   ) => void;
+  appendRootChildNode: (dir: TDir, appendingNodeId?: string) => void;
   appendSiblingNode: (
     selectNodeId: string | undefined,
     insert: "before" | "after",
@@ -41,6 +42,30 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
   const [selectNodeId, setSelectNodeId] = useState<string>();
   const [previewNodeData, setPreviewNodeData] = useState<IPreviewNodeData>();
 
+  const appendRootChildNode = useCallback(
+    (dir: TDir, appendingNodeId?: string) => {
+      setMindMapData((data) => {
+        const newData = cloneDeep(data);
+        let appendingNode: INode;
+        if (appendingNodeId) {
+          const res = findNodesByIds(newData, [appendingNodeId]);
+          appendingNode = res[0].node;
+          const children = (res[0].parentNode as IRootNode)[
+            res[1].inChildrenKey
+          ];
+          children.splice(res[0].index, 1);
+        } else {
+          appendingNode = getNewNode();
+        }
+        const childrenKey = dir === "left" ? "reverseChildren" : "children";
+        newData[childrenKey].push(appendingNode);
+        setSelectNodeId(appendingNode.id);
+        return newData;
+      });
+    },
+    []
+  );
+
   const appendChildNode = useCallback(
     (selectNodeId: string | undefined, appendingNodeId?: string) => {
       if (!selectNodeId || selectNodeId === appendingNodeId) return;
@@ -50,7 +75,10 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
         let appendingNode: INode;
         if (appendingNodeId) {
           appendingNode = res[1].node;
-          res[1].parentNode.children.splice(res[1].index, 1);
+          const children = (res[1].parentNode as IRootNode)[
+            res[1].inChildrenKey
+          ];
+          children.splice(res[1].index, 1);
         } else {
           appendingNode = getNewNode();
         }
@@ -72,36 +100,24 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
       setMindMapData((data) => {
         const newData = cloneDeep(data);
         const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
-        const selectNode = res[0];
         const appendingNode: INode = appendingNodeId
           ? res[1].node
           : getNewNode();
-
         const insertIndex =
-          insert === "before" ? selectNode.index : selectNode.index + 1;
-        if (selectNode.isReChild) {
-          (selectNode.parentNode as IRootNode).reChildren.splice(
-            insertIndex,
-            0,
-            appendingNode
-          );
-        } else {
-          selectNode.parentNode.children.splice(insertIndex, 0, appendingNode);
-        }
+          insert === "before" ? res[0].index : res[0].index + 1;
+        const children = (res[0].parentNode as IRootNode)[res[0].inChildrenKey];
+        children.splice(insertIndex, 0, appendingNode);
 
         if (appendingNodeId) {
-          const appendingNode = res[1];
-          const isSameParent =
-            appendingNode.parentNode.id === selectNode.parentNode.id;
+          const isSameParent = res[1].parentNode.id === res[0].parentNode.id;
           const deleteIndex =
-            isSameParent && appendingNode.index > selectNode.index
-              ? appendingNode.index + 1
-              : appendingNode.index;
-          if (res[1].isReChild) {
-            (res[1].parentNode as IRootNode).reChildren.splice(deleteIndex, 1);
-          } else {
-            res[1].parentNode.children.splice(deleteIndex, 1);
-          }
+            isSameParent && res[1].index > res[0].index
+              ? res[1].index + 1
+              : res[1].index;
+          const children = (res[1].parentNode as IRootNode)[
+            res[1].inChildrenKey
+          ];
+          children.splice(deleteIndex, 1);
         }
 
         setSelectNodeId(appendingNode.id);
@@ -161,6 +177,7 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
       value={{
         mindMapData,
         appendChildNode,
+        appendRootChildNode,
         appendSiblingNode,
         removeNode,
         editNode,

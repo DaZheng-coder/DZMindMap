@@ -1,5 +1,13 @@
 import { nanoid } from "nanoid";
-import { ICoord, ILineCoord, INode, IRootNode, TDir } from "../types";
+import {
+  ICoord,
+  IFindItem,
+  ILineCoord,
+  INode,
+  IRootNode,
+  TChildrenKey,
+  TDir,
+} from "../types";
 import { uniqueId } from "lodash";
 import { getRect } from "../utils";
 import { XYCoord } from "react-dnd";
@@ -9,13 +17,6 @@ import {
   NODE_MARGIN_Y,
 } from "../constants";
 
-/**
- * 初始化所有连接线的起始点、终止点坐标
- * @param mindMapData 思维导图总体数据
- * @param originCoord 画布原点坐标
- * @param lineCoords 存放结果数组
- * @returns 结束点坐标
- */
 export const initLineCoords = (
   mindMapData: IRootNode | INode,
   originCoord: ICoord,
@@ -45,9 +46,9 @@ export const initLineCoords = (
     if (leftCoord) lineCoords.push({ start: rightCoord, end: leftCoord });
   };
 
-  const reShrink = (mindMapData as IRootNode).reShrink;
-  if (!(typeof reShrink === "boolean" && reShrink)) {
-    (mindMapData as IRootNode).reChildren?.forEach(toLeft);
+  const reverseShrink = (mindMapData as IRootNode).reverseShrink;
+  if (!(typeof reverseShrink === "boolean" && reverseShrink)) {
+    (mindMapData as IRootNode).reverseChildren?.forEach(toLeft);
   }
   if (!(typeof shrink === "boolean" && shrink)) {
     children?.forEach(dir === "left" ? toLeft : toRight);
@@ -55,43 +56,37 @@ export const initLineCoords = (
   return { rightCoord, leftCoord };
 };
 
-/**
- * 通过id寻找节点们
- * @param mindMapData 思维导图总体数据
- * @param nodeIds 节点id数组
- * @returns 节点本身、父节点、在父节点里的索引
- */
 export const findNodesByIds = (
   mindMapData: INode,
   nodeIds: (string | undefined)[]
-): {
-  node: IRootNode | INode;
-  parentNode: INode;
-  index: number;
-  isReChild: boolean;
-}[] => {
+): IFindItem[] => {
   const n = nodeIds.length;
   const res = new Array(n);
   let finished = 0;
   const find = (
     node: INode,
     i: number,
-    parentNode?: INode,
-    isReChild?: boolean
+    inChildrenKey: TChildrenKey = "children",
+    parentNode?: INode
   ) => {
     if (finished === n) return;
     const resIndex = nodeIds.findIndex((id) => node.id === id);
     if (resIndex !== -1) {
-      res[resIndex] = { node, parentNode, index: i, isReChild };
+      res[resIndex] = { node, parentNode, index: i, inChildrenKey };
       finished++;
     }
-    if ((node as IRootNode).reChildren) {
-      for (let i = 0; i < (node as IRootNode).reChildren.length; i++) {
-        find((node as IRootNode).reChildren[i], i, node, true);
+    if ((node as IRootNode).reverseChildren) {
+      for (let i = 0; i < (node as IRootNode).reverseChildren.length; i++) {
+        find(
+          (node as IRootNode).reverseChildren[i],
+          i,
+          "reverseChildren",
+          node
+        );
       }
     }
     for (let i = 0; i < node.children.length; i++) {
-      find(node.children[i], i, node);
+      find(node.children[i], i, "children", node);
     }
   };
   find(mindMapData, -1);
@@ -186,7 +181,7 @@ export const getPreviewData = ({
     const dir = getRootInsertPos(node, draggingOffset, selectRect);
     if (!dir) return;
     const children =
-      dir === "right" ? node.children : (node as IRootNode).reChildren;
+      dir === "right" ? node.children : (node as IRootNode).reverseChildren;
     const start = {
       x: selectRect[dir] - originRect.left,
       y: selectRect.bottom - originRect.top - selectRect.height / 2,

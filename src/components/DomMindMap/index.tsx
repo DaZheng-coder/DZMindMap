@@ -11,7 +11,7 @@ const DomMindMap: FC = () => {
         id: nanoid(),
         label: "root",
         children: [],
-        reChildren: [getNewNode()],
+        reverseChildren: [getNewNode()],
       }}
     >
       <MindMapContainer />

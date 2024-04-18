@@ -28,6 +28,7 @@ const MindMapContainer: FC = () => {
     selectNodeId,
     setSelectNodeId,
     appendChildNode,
+    appendRootChildNode,
     appendSiblingNode,
     removeNode,
     previewNodeData,
@@ -47,9 +48,14 @@ const MindMapContainer: FC = () => {
       if (["Tab", "Enter"].includes(e.key)) e.preventDefault();
       switch (e.key) {
         case "Tab":
-          appendChildNode(selectNodeId);
+          if (selectNodeId === mindMapData.id) {
+            appendRootChildNode("right");
+          } else {
+            appendChildNode(selectNodeId);
+          }
           break;
         case "Enter":
+          if (selectNodeId === mindMapData.id) return;
           appendSiblingNode(selectNodeId, "after");
           break;
         case "Backspace":
@@ -103,13 +109,13 @@ const MindMapContainer: FC = () => {
           />
           <div className="tw-flex">
             <div className="tw-flex tw-flex-col tw-relative tw-justify-center tw-items-end">
-              {(mindMapData.reChildren || []).map((child, index) => (
+              {(mindMapData.reverseChildren || []).map((child, index) => (
                 <MindMapBlock
                   key={child.id}
                   node={child}
                   parentNodeId={mindMapData.id}
-                  prevNodeId={mindMapData.reChildren[index - 1]?.id}
-                  nextNodeId={mindMapData.reChildren[index + 1]?.id}
+                  prevNodeId={mindMapData.reverseChildren[index - 1]?.id}
+                  nextNodeId={mindMapData.reverseChildren[index + 1]?.id}
                   dir="left"
                 />
               ))}

@@ -10,8 +10,8 @@ export interface INode {
 }
 
 export interface IRootNode extends INode {
-  reChildren: INode[];
-  reShrink?: boolean;
+  reverseChildren: INode[];
+  reverseShrink?: boolean;
 }
 
 export interface ICoord {
@@ -35,3 +35,12 @@ export interface IPreviewNodeData {
   lineCoord?: ILineCoord;
   transform?: string;
 }
+
+export interface IFindItem {
+  node: IRootNode | INode;
+  parentNode: INode;
+  index: number;
+  inChildrenKey: TChildrenKey;
+}
+
+export type TChildrenKey = "children" | "reverseChildren";
