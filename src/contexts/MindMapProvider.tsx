@@ -176,14 +176,14 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
     <MindMapContext.Provider
       value={{
         mindMapData,
+        selectNodeId,
+        previewNodeData,
         appendChildNode,
         appendRootChildNode,
         appendSiblingNode,
         removeNode,
         editNode,
-        selectNodeId,
         setSelectNodeId,
-        previewNodeData,
         setPreviewNodeData,
         changeNodeShrink,
         updateNodeLabel,

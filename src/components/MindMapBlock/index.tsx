@@ -4,7 +4,12 @@ import { IDraggingItem, INode, TDir } from "../../types";
 import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { MindMapContext } from "../../contexts/MindMapProvider";
-import { getPreviewData, getRootInsertPos } from "../../helper";
+import {
+  getLeftInsertPos,
+  getPreviewData,
+  getRightInsertPos,
+  getRootInsertPos,
+} from "../../helper";
 
 interface IMindMapBlockProps {
   node: INode;
@@ -26,8 +31,12 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const blockRef = useRef<HTMLDivElement | null>(null);
   const nodeRef = useRef<HTMLDivElement | null>(null);
 
-  const { appendChildNode, appendSiblingNode, setPreviewNodeData } =
-    useContext(MindMapContext)!;
+  const {
+    appendChildNode,
+    appendRootChildNode,
+    appendSiblingNode,
+    setPreviewNodeData,
+  } = useContext(MindMapContext)!;
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "MindMap",
@@ -76,20 +85,26 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       drop: (item, monitor) => {
         const draggingNode = item.draggingNode;
         const isOver = monitor.isOver({ shallow: true });
+        const draggingOffset = monitor.getClientOffset();
         if (isOver) {
           if (isRoot) {
-            const pos = getRootInsertPos(node, monitor.getClientOffset());
+            const pos = getRootInsertPos(node, draggingOffset);
+            if (!pos) return;
+            appendRootChildNode(pos, draggingNode.id);
+          } else {
+            const pos = { left: getLeftInsertPos, right: getRightInsertPos }[
+              dir
+            ](node, draggingOffset);
+            if (pos === "insertChild") {
+              appendChildNode(node.id, draggingNode.id);
+            } else {
+              appendSiblingNode(
+                node.id,
+                pos === "top" ? "before" : "after",
+                draggingNode.id
+              );
+            }
           }
-          // const pos = getRightPreInsertPos(monitor.getClientOffset(), isRoot);
-          // if (pos === "insertChild") {
-          //   appendChildNode(node.id, draggingNode.id);
-          // } else {
-          //   appendSiblingNode(
-          //     node.id,
-          //     pos === "top" ? "before" : "after",
-          //     draggingNode.id
-          //   );
-          // }
         }
       },
     }),
