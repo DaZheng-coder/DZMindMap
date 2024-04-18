@@ -4,14 +4,14 @@ import { ICoord } from "../../types";
 interface ILineProps {
   start: ICoord;
   end: ICoord;
-  turn?: "start" | "end";
+  dir?: "right" | "left";
 }
 
-const Line: FC<ILineProps> = ({ start, end, turn = "start" }) => {
+const Line: FC<ILineProps> = ({ start, end, dir = "right" }) => {
   const _start = `${start.x},${start.y}`;
   const _end = `${end.x},${end.y}`;
   const _turn =
-    turn === "start"
+    dir === "right"
       ? `${start.x + 20},${start.y} ${start.x + 20},${end.y}`
       : `${end.x + 20},${start.y} ${end.x + 20}, ${end.y}`;
 

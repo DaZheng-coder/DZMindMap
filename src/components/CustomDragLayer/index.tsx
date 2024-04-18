@@ -46,7 +46,7 @@ export const CustomDragLayer = () => {
   }, [item?.draggingDomRef]);
 
   return isDragging ? (
-    <div className="tw-fixed tw-top-0 tw-left-0 tw-z-100 tw-pointer-events-none tw-w-full tw-h-full tw-opacity-80">
+    <div className="tw-fixed tw-top-0 tw-left-0 tw-z-9999 tw-pointer-events-none tw-w-full tw-h-full tw-opacity-80">
       <div ref={previewRef} style={getItemStyles(currentOffset)}></div>
     </div>
   ) : null;

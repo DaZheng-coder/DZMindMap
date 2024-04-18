@@ -1,15 +1,10 @@
 import { FC, useContext, useEffect, useRef } from "react";
 import MindMapNode from "../MindMapNode";
-import { ICoord, IDraggingItem, INode, TDir } from "../../types";
-import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import { IDraggingItem, INode, TDir } from "../../types";
+import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { MindMapContext } from "../../contexts/MindMapProvider";
-import {
-  MIND_MAP_CONTAINER_ID,
-  NODE_MARGIN_X,
-  NODE_MARGIN_Y,
-} from "../../constants";
-import { getRect } from "../../utils";
+import { getPreviewData } from "../../helper";
 
 interface IMindMapBlockProps {
   node: INode;
@@ -34,39 +29,8 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
   const { appendChildNode, appendSiblingNode, setPreviewNodeData } =
     useContext(MindMapContext)!;
 
-  const getPreInsertPos = (
-    draggingOffset: XYCoord | null,
-    isRoot: boolean = false,
-    nodeRect?: DOMRect
-  ) => {
-    const rect =
-      nodeRect || document.getElementById(node.id)?.getBoundingClientRect();
-    if (rect && draggingOffset) {
-      const centerX = (rect.width / 4) * 3 + rect.left;
-      const centerY = rect.height / 2 + rect.top;
-      if (draggingOffset.x <= centerX) {
-        if (isRoot) {
-          return "lastChild";
-        } else {
-          return draggingOffset.y <= centerY ? "top" : "bottom";
-        }
-      } else {
-        return "lastChild";
-      }
-    } else {
-      return false;
-    }
-  };
-
   const handleNotHover = () => {
     setPreviewNodeData({ visible: false });
-  };
-
-  const setPreviewData = (start: ICoord, end: ICoord) => {
-    setPreviewNodeData({
-      visible: true,
-      lineCoord: { start, end },
-    });
   };
 
   const [{ isDragging }, drag, preview] = useDrag(() => ({
@@ -97,92 +61,37 @@ const MindMapBlock: FC<IMindMapBlockProps> = ({
       hover: (item, monitor) => {
         const isOver = monitor.isOver({ shallow: true });
         if (!isOver) return;
-        const originRect = getRect(MIND_MAP_CONTAINER_ID);
-        const selectNodeRect = getRect(node.id);
-        if (!selectNodeRect) return;
-
-        const pos = getPreInsertPos(
-          monitor.getClientOffset(),
+        const draggingOffset = monitor.getClientOffset();
+        const newPreviewData = getPreviewData({
+          node,
+          draggingOffset,
           isRoot,
-          selectNodeRect
-        );
-        const originCoord: ICoord = {
-          x: originRect?.left || 0,
-          y: originRect?.top || 0,
-        };
-
-        if (pos === "lastChild") {
-          const start = {
-            x: selectNodeRect.right - originCoord.x,
-            y:
-              selectNodeRect.bottom - originCoord.y - selectNodeRect.height / 2,
-          };
-          const end = {
-            x: start.x + NODE_MARGIN_X * 2,
-            y: node.children.length ? start.y + selectNodeRect.height : start.y,
-          };
-          setPreviewData(start, end);
-        } else {
-          const parentNodeRect = getRect(parentNodeId);
-          if (!parentNodeRect) return;
-
-          const start = {
-            x: parentNodeRect.right - originCoord.x,
-            y:
-              parentNodeRect.bottom - originCoord.y - parentNodeRect.height / 2,
-          };
-          if (pos === "top") {
-            const prevNodeRect = getRect(prevNodeId);
-
-            const end = prevNodeId
-              ? {
-                  x: selectNodeRect.left - originCoord.x,
-                  y: prevNodeRect
-                    ? (selectNodeRect.top - prevNodeRect.bottom) / 2 +
-                      prevNodeRect.bottom -
-                      originCoord.y
-                    : 0,
-                }
-              : {
-                  x: selectNodeRect.left - originCoord.x,
-                  y: selectNodeRect.top - NODE_MARGIN_Y - originCoord.y,
-                };
-            setPreviewData(start, end);
-          } else {
-            const nextNodeRect = getRect(nextNodeId);
-
-            const end = nextNodeId
-              ? {
-                  x: selectNodeRect.left - originCoord.x,
-                  y: nextNodeRect
-                    ? (nextNodeRect.top - selectNodeRect.bottom) / 2 +
-                      selectNodeRect.bottom -
-                      originCoord.y
-                    : 0,
-                }
-              : {
-                  x: selectNodeRect.left - originCoord.x,
-                  y: selectNodeRect.bottom + NODE_MARGIN_Y - originCoord.y,
-                };
-            setPreviewData(start, end);
-          }
-        }
+          dir,
+          parentNodeId,
+          prevNodeId,
+          nextNodeId,
+        });
+        newPreviewData &&
+          setPreviewNodeData({
+            visible: true,
+            lineCoord: newPreviewData,
+          });
       },
       drop: (item, monitor) => {
-        const draggingNode = item.draggingNode;
-        const isOver = monitor.isOver({ shallow: true });
-        if (isOver) {
-          const pos = getPreInsertPos(monitor.getClientOffset(), isRoot);
-          if (pos === "lastChild") {
-            appendChildNode(node.id, draggingNode.id);
-          } else {
-            appendSiblingNode(
-              node.id,
-              pos === "top" ? "before" : "after",
-              draggingNode.id
-            );
-          }
-        }
+        // const draggingNode = item.draggingNode;
+        // const isOver = monitor.isOver({ shallow: true });
+        // if (isOver) {
+        //   const pos = getRightPreInsertPos(monitor.getClientOffset(), isRoot);
+        //   if (pos === "insertChild") {
+        //     appendChildNode(node.id, draggingNode.id);
+        //   } else {
+        //     appendSiblingNode(
+        //       node.id,
+        //       pos === "top" ? "before" : "after",
+        //       draggingNode.id
+        //     );
+        //   }
+        // }
       },
     }),
     [prevNodeId, nextNodeId]

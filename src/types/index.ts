@@ -22,7 +22,7 @@ export interface ICoord {
 export interface ILineCoord {
   start: ICoord;
   end: ICoord;
-  turn?: "start" | "end";
+  dir?: "right" | "left";
 }
 
 export interface IDraggingItem {

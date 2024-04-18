@@ -13,12 +13,12 @@ const SvgContainer: FC<ISvgContainerProps> = ({
 }) => {
   return (
     <svg className="tw-absolute tw-left-0 tw-top-0 tw-w-full tw-h-full tw-z-[-1]">
-      {lineCoords.map(({ start, end, turn }, index) => (
+      {lineCoords.map(({ start, end, dir }, index) => (
         <Line
           key={index}
           start={start}
           end={end}
-          turn={turn}
+          dir={dir}
           // showArrow={showArrow}
         />
       ))}
@@ -27,7 +27,7 @@ const SvgContainer: FC<ISvgContainerProps> = ({
           key="preview_line"
           start={previewLineCoord.start}
           end={previewLineCoord.end}
-          turn={previewLineCoord.turn}
+          dir={previewLineCoord.dir}
           // showArrow={showArrow}
         />
       )}

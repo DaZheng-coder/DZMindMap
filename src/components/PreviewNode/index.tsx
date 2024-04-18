@@ -20,7 +20,10 @@ const PreviewNode: FC<IPreviewNodeProps> = () => {
         display: previewNodeData?.visible ? "block" : "none",
         top: previewNodeData?.lineCoord?.end.y,
         left: previewNodeData?.lineCoord?.end.x,
-        transform: "translateY(-50%)",
+        transform:
+          previewNodeData?.lineCoord?.dir === "left"
+            ? "translate(-100%, -50%)"
+            : "translateY(-50%)",
       }}
       className="tw-absolute tw-text-[#222] tw-bg-[skyblue] tw-p-[2px] tw-rounded-[4px]"
     />

@@ -103,19 +103,21 @@ const MindMapContainer: FC = () => {
           />
           <div className="tw-flex">
             <div className="tw-flex tw-flex-col tw-relative tw-justify-center tw-items-end">
-              {(mindMapData.reChildren || []).map((child) => (
+              {(mindMapData.reChildren || []).map((child, index) => (
                 <MindMapBlock
                   key={child.id}
                   node={child}
                   parentNodeId={mindMapData.id}
+                  prevNodeId={mindMapData.reChildren[index - 1]?.id}
+                  nextNodeId={mindMapData.reChildren[index + 1]?.id}
                   dir="left"
                 />
               ))}
             </div>
             <MindMapBlock node={mindMapData} isRoot dir="right" />
           </div>
-          <CustomDragLayer />
           <PreviewNode />
+          <CustomDragLayer />
         </div>
       </DndProvider>
     </div>
