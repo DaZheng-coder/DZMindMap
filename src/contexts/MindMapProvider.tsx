@@ -51,7 +51,7 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
           const res = findNodesByIds(newData, [appendingNodeId]);
           appendingNode = res[0].node;
           const children = (res[0].parentNode as IRootNode)[
-            res[1].inChildrenKey
+            res[0].inChildrenKey
           ];
           children.splice(res[0].index, 1);
         } else {
@@ -96,7 +96,12 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
       insert: "before" | "after",
       appendingNodeId?: string
     ) => {
-      if (!selectNodeId || selectNodeId === appendingNodeId) return;
+      if (
+        !selectNodeId ||
+        selectNodeId === appendingNodeId ||
+        selectNodeId === mindMapData.id
+      )
+        return;
       setMindMapData((data) => {
         const newData = cloneDeep(data);
         const res = findNodesByIds(newData, [selectNodeId, appendingNodeId]);
@@ -110,8 +115,9 @@ const MindMapProvider: FC<IMindMapProviderProps> = ({ initData, children }) => {
 
         if (appendingNodeId) {
           const isSameParent = res[1].parentNode.id === res[0].parentNode.id;
+          const isSameSize = res[1].inChildrenKey === res[0].inChildrenKey;
           const deleteIndex =
-            isSameParent && res[1].index > res[0].index
+            isSameParent && isSameSize && res[1].index > res[0].index
               ? res[1].index + 1
               : res[1].index;
           const children = (res[1].parentNode as IRootNode)[

@@ -55,7 +55,6 @@ const MindMapContainer: FC = () => {
           }
           break;
         case "Enter":
-          if (selectNodeId === mindMapData.id) return;
           appendSiblingNode(selectNodeId, "after");
           break;
         case "Backspace":
@@ -68,7 +67,14 @@ const MindMapContainer: FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [appendChildNode, appendSiblingNode, removeNode, selectNodeId]);
+  }, [
+    appendChildNode,
+    appendSiblingNode,
+    removeNode,
+    selectNodeId,
+    appendRootChildNode,
+    mindMapData.id,
+  ]);
 
   useLayoutEffect(() => {
     if (mindMapWrapRef.current) {
